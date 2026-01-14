@@ -1,0 +1,95 @@
+// Kategorije i podkategorije proizvoda
+export const categories = {
+  KOSA: {
+    name: "KOSA",
+    subcategories: [
+      "Električni aparati za stilizovanje kose",
+      "Profesionalne četke i češljevi",
+      "Salonski pribor za rad",
+      "Trajne farbe za kosu",
+      "Toneri i color maske za kosu",
+      "Hidrogen i blanš",
+      "Nadogradnja prirodne kose",
+      "Pribor za nadogradnju kose",
+      "Nega i stilizovanje kose",
+      "Barber - za muškarce",
+    ],
+  },
+  NOKTI: {
+    name: "NOKTI",
+    subcategories: [
+      "Manikir pribor za rad",
+      "Pedikir pribor za rad",
+      "Preparati za nokat",
+      "Nadogradnja i izlivanje",
+      "Gel lak i ojačavanje",
+      "Lakovi za prirodne nokte",
+      "UV/LED LAMPE",
+      "Aspiratori",
+      "Ostali pribor",
+    ],
+  },
+  PREPARATI_ZA_LICE_I_TELO: {
+    name: "PREPARATI ZA LICE I TELO",
+    subcategories: {
+      NEGA_LICA: {
+        name: "Nega lica",
+        items: [
+          "Čišćenje lica",
+          "Kreme za lice - normalna koža",
+          "Kreme za lice - problematična koža",
+          "ANTI AGE kolekcija",
+        ],
+      },
+      NEGA_TELA: {
+        name: "Nega tela",
+        items: [
+          "Kreme za telo",
+          "Losioni za telo",
+          "Buteri za telo",
+          "Pilinzi za telo",
+          "Anticelulit kolekcija",
+          "Dnevna rutina - kućna upotreba",
+        ],
+      },
+    },
+  },
+  MASAZA: {
+    name: "MASAŽA",
+    subcategories: [],
+  },
+  OPREMA_ZA_SALONE: {
+    name: "OPREMA ZA SALONE",
+    subcategories: [],
+  },
+};
+
+// Helper funkcija za dobijanje svih kategorija kao niza
+export const getCategoriesList = () => {
+  return Object.values(categories).map((cat) => ({
+    id: cat.name,
+    name: cat.name,
+    hasSubgroups: !!cat.subcategories?.NEGA_LICA,
+  }));
+};
+
+// Helper funkcija za dobijanje svih podkategorija za određenu kategoriju
+export const getSubcategories = (categoryName) => {
+  const category = Object.values(categories).find(
+    (cat) => cat.name === categoryName
+  );
+
+  if (!category) return [];
+
+  // Ako ima podgrupe (kao PREPARATI ZA LICE I TELO)
+  if (category.subcategories?.NEGA_LICA) {
+    return category.subcategories;
+  }
+
+  // Ako su podkategorije običan niz
+  if (Array.isArray(category.subcategories)) {
+    return category.subcategories;
+  }
+
+  return [];
+};

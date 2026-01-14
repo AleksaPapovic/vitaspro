@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProducts } from "../utils/storage";
 import { getGoogleDriveImageUrl } from "../utils/imageHelper";
+import { getCategoriesList, getSubcategories } from "../utils/categories";
 import "./Home.css";
 
 function Home() {
@@ -12,6 +13,7 @@ function Home() {
     const cart = JSON.parse(localStorage.getItem("vitaspro_cart") || "[]");
     return cart.length;
   });
+  const [showCategoriesMenu, setShowCategoriesMenu] = useState(false);
 
   useEffect(() => {
     // Load products from Google Drive JSON file
@@ -62,12 +64,81 @@ function Home() {
                   alt="Vitas Pro Logo"
                   className="logo-image"
                 />
-                <h1 className="logo">Vitas Pro</h1>
+                <h1 className="logo">VITAS PRO</h1>
               </div>
               <div className="nav-links">
                 <a href="#home">Početna</a>
-                <a href="#products">Proizvodi</a>
+                <div
+                  className="categories-menu-wrapper"
+                  onMouseEnter={() => setShowCategoriesMenu(true)}
+                  onMouseLeave={() => setShowCategoriesMenu(false)}
+                >
+                  <a
+                    href="#products"
+                    className="categories-link"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowCategoriesMenu(!showCategoriesMenu);
+                    }}
+                  >
+                    Kategorije ▼
+                  </a>
+                  {showCategoriesMenu && (
+                    <div className="categories-dropdown">
+                      {getCategoriesList().map((category) => (
+                        <div key={category.id} className="category-item">
+                          <span className="category-name">{category.name}</span>
+                          {category.hasSubgroups ? (
+                            <div className="subcategories-group">
+                              {Object.values(
+                                getSubcategories(category.name)
+                              ).map((subgroup) => (
+                                <div key={subgroup.name} className="subgroup">
+                                  <div className="subgroup-name">
+                                    {subgroup.name}
+                                  </div>
+                                  <div className="subgroup-items">
+                                    {subgroup.items.map((item) => (
+                                      <a
+                                        key={item}
+                                        href="#products"
+                                        className="subcategory-link"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          setShowCategoriesMenu(false);
+                                        }}
+                                      >
+                                        {item}
+                                      </a>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : getSubcategories(category.name).length > 0 ? (
+                            <div className="subcategories-list">
+                              {getSubcategories(category.name).map((subcat) => (
+                                <a
+                                  key={subcat}
+                                  href="#products"
+                                  className="subcategory-link"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowCategoriesMenu(false);
+                                  }}
+                                >
+                                  {subcat}
+                                </a>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <a href="#about">O nama</a>
+                <a href="/partnership">Partnerstvo</a>
                 <a href="/admin" className="admin-link">
                   Admin
                 </a>
@@ -266,6 +337,9 @@ function Home() {
                 </li>
                 <li>
                   <a href="#about">O nama</a>
+                </li>
+                <li>
+                  <a href="/partnership">Partnerstvo</a>
                 </li>
                 <li>
                   <a href="/admin">Admin</a>

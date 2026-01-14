@@ -82,6 +82,119 @@
   color: #d4af37;
 }
 
+/* Categories Dropdown Menu */
+.categories-menu-wrapper {
+  position: relative;
+}
+
+.categories-link {
+  cursor: pointer;
+}
+
+.categories-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: black;
+  border: 1px solid #d4af37;
+  border-radius: 8px;
+  min-width: 300px;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 0.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  padding: 1rem 0;
+}
+
+.category-item {
+  position: relative;
+  padding: 0.75rem 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.category-item:hover {
+  background-color: rgba(212, 175, 55, 0.1);
+}
+
+.category-name {
+  color: #d4af37;
+  font-weight: 600;
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.subcategories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+}
+
+.subcategories-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+}
+
+.subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.subgroup-name {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  padding-bottom: 0.25rem;
+}
+
+.subgroup-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.subcategory-link {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.25rem 0;
+  transition: color 0.3s ease, padding-left 0.3s ease;
+  display: block;
+}
+
+.subcategory-link:hover {
+  color: #d4af37;
+  padding-left: 0.5rem;
+}
+
+/* Scrollbar styling for dropdown */
+.categories-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.categories-dropdown::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.categories-dropdown::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 4px;
+}
+
+.categories-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #c9a961;
+}
+
 .admin-link {
   background: linear-gradient(135deg, #d4af37 0%, #c9a961 100%);
   color: white !important;
