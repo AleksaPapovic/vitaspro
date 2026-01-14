@@ -509,7 +509,7 @@ function Admin() {
                       alt={product.name}
                       className="admin-product-image"
                       onError={(e) => {
-                        e.target.src = "/placeholder.jpg";
+                        e.target.src = "/vitaspro.jpg";
                       }}
                     />
                     <div className="admin-product-info">

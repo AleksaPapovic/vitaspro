@@ -112,7 +112,18 @@ function Home() {
           <section id="products" className="products-section">
             <div className="container">
               <div className="empty-state">
-                <div className="empty-icon">💄</div>
+                <div className="empty-icon">
+                  <img
+                    src="/vitaspro.jpg"
+                    alt="Vitas Pro"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </div>
                 <h3>Još nema proizvoda</h3>
                 <p>Proizvodi će se pojaviti ovde kada budu dodati</p>
                 <a href="/admin" className="admin-link-button">
@@ -143,7 +154,7 @@ function Home() {
                         alt={product.name}
                         className="product-image"
                         onError={(e) => {
-                          e.target.src = "/placeholder.jpg";
+                          e.target.src = "/vitaspro.jpg";
                         }}
                       />
                       <div className="product-badge">Novo</div>
@@ -201,7 +212,11 @@ function Home() {
                 </a>
               </div>
               <div className="about-image">
-                <div className="about-placeholder">✨</div>
+                <img
+                  src="/vitaspro.jpg"
+                  alt="Vitas Pro"
+                  className="about-image-content"
+                />
               </div>
             </div>
           </div>

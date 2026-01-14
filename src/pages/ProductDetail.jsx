@@ -117,12 +117,12 @@ function ProductDetail() {
                   alt={product.name}
                   className="main-product-image"
                   onError={(e) => {
-                    e.target.src = '/placeholder.jpg'
+                    e.target.src = '/vitaspro.jpg'
                   }}
                 />
               ) : (
                 <div className="no-image-placeholder">
-                  <span>Slika nije dostupna</span>
+                  <img src="/vitaspro.jpg" alt="Vitas Pro" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               )}
             </div>
@@ -140,7 +140,7 @@ function ProductDetail() {
                       alt={`${product.name} - View ${index + 1}`}
                       className="thumbnail-image"
                       onError={(e) => {
-                        e.target.src = '/placeholder.jpg'
+                        e.target.src = '/vitaspro.jpg'
                       }}
                     />
                   </div>

@@ -1,7 +1,7 @@
 // Google Drive image URL conversion utility with multiple fallback methods
 
 export const getGoogleDriveImageUrl = (url) => {
-  if (!url) return '/placeholder.jpg'
+  if (!url) return '/vitaspro.jpg'
   
   // If already a direct link, return it
   if (url.includes('drive.google.com/uc?export=view') || url.includes('drive.google.com/thumbnail')) {
@@ -34,7 +34,7 @@ export const getGoogleDriveImageUrl = (url) => {
 
 // Alternative method using uc?export=view (less reliable but sometimes needed)
 export const getGoogleDriveImageUrlAlternative = (url) => {
-  if (!url) return '/placeholder.jpg'
+  if (!url) return '/vitaspro.jpg'
   
   let fileId = null
   
