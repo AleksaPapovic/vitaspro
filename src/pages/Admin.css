@@ -16,6 +16,10 @@
   color: #333;
 }
 
+.admin-header {
+  position: relative;
+}
+
 .admin-header h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
@@ -25,6 +29,118 @@
 .admin-header p {
   font-size: 1.1rem;
   color: #666;
+}
+
+.drive-config-toggle {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.drive-config-toggle:hover {
+  background: #5568d3;
+}
+
+.drive-config-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.drive-config-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.config-instructions {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.drive-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.config-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.test-button {
+  padding: 0.6rem 1.5rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.test-button:hover {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.apps-script-instructions {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.apps-script-instructions h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.apps-script-instructions ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  line-height: 2;
+}
+
+.apps-script-instructions li {
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.apps-script-instructions code {
+  background: #e9ecef;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #d63384;
+}
+
+.apps-script-instructions a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.apps-script-instructions a:hover {
+  text-decoration: underline;
 }
 
 .message {
@@ -231,6 +347,110 @@
 .back-link:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* JSON Editor Section */
+.json-editor-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+}
+
+.json-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.json-editor-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #333;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.json-editor-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.toggle-json-btn,
+.copy-json-btn {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.toggle-json-btn {
+  background: #667eea;
+  color: white;
+}
+
+.toggle-json-btn:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.copy-json-btn {
+  background: #28a745;
+  color: white;
+}
+
+.copy-json-btn:hover {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.json-editor-content {
+  margin-top: 1rem;
+}
+
+.json-instructions {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.json-instructions code {
+  background: #e9ecef;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #d63384;
+}
+
+.json-textarea {
+  width: 100%;
+  min-height: 300px;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  background: #f8f9fa;
+  color: #333;
+  resize: vertical;
+  cursor: text;
+}
+
+.json-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
 }
 
 @media (max-width: 968px) {

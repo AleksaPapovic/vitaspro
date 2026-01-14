@@ -13,6 +13,18 @@ function Admin() {
     description: ''
   })
   const [message, setMessage] = useState('')
+  const [driveConfig, setDriveConfig] = useState(() => {
+    const stored = localStorage.getItem('vitaspro_drive_config')
+    if (stored) {
+      return JSON.parse(stored)
+    }
+    // Default configuration with user's Google Drive file
+    return { 
+      fileUrl: 'https://drive.google.com/file/d/1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv/view?usp=sharing',
+      appsScriptUrl: '' 
+    }
+  })
+  const [showDriveConfig, setShowDriveConfig] = useState(false)
 
   useEffect(() => {
     loadProducts()
@@ -46,11 +58,13 @@ function Admin() {
       await saveProduct(formData)
       await loadProducts()
       setFormData({ name: '', price: '', image: '', description: '' })
-      setMessage('Product added successfully! A JSON file will be downloaded. Upload it to your repository or Netlify to update the site.')
-      setTimeout(() => setMessage(''), 5000)
-    } catch (error) {
-      setMessage('Error saving product. Please try again.')
+      setMessage('Product added successfully! Google Drive file updated.')
       setTimeout(() => setMessage(''), 3000)
+    } catch (error) {
+      console.error('Save error:', error)
+      const errorMsg = error.message || 'Error saving product'
+      setMessage(`${errorMsg}. Please check Google Apps Script configuration in settings.`)
+      setTimeout(() => setMessage(''), 8000)
     }
   }
 
@@ -60,11 +74,13 @@ function Admin() {
         setMessage('Deleting product...')
         await deleteProduct(id)
         await loadProducts()
-        setMessage('Product deleted successfully! A JSON file will be downloaded. Upload it to your repository or Netlify to update the site.')
-        setTimeout(() => setMessage(''), 5000)
-      } catch (error) {
-        setMessage('Error deleting product. Please try again.')
+        setMessage('Product deleted successfully! Google Drive file updated.')
         setTimeout(() => setMessage(''), 3000)
+      } catch (error) {
+        console.error('Delete error:', error)
+        const errorMsg = error.message || 'Error deleting product'
+        setMessage(`${errorMsg}. Please check Google Apps Script configuration in settings.`)
+        setTimeout(() => setMessage(''), 8000)
       }
     }
   }
@@ -73,13 +89,120 @@ function Admin() {
     return getGoogleDriveImageUrl(url)
   }
 
+  const handleDriveConfigSave = (e) => {
+    e.preventDefault()
+    localStorage.setItem('vitaspro_drive_config', JSON.stringify(driveConfig))
+    setMessage('Google Drive configuration saved! Reloading products...')
+    setTimeout(() => {
+      loadProducts()
+      setMessage('')
+    }, 2000)
+  }
+
+  const testAppsScript = async () => {
+    if (!driveConfig.appsScriptUrl || driveConfig.appsScriptUrl.trim() === '') {
+      setMessage('Please enter a Google Apps Script URL first')
+      setTimeout(() => setMessage(''), 3000)
+      return
+    }
+
+    try {
+      setMessage('Testing Google Apps Script connection...')
+      const testData = [{ id: 'test', name: 'Test Product', price: '0', image: '', description: '' }]
+      
+      const response = await fetch(driveConfig.appsScriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'update',
+          data: testData
+        }),
+        mode: 'no-cors'
+      })
+      
+      setMessage('Test request sent! Check your Google Drive file to verify it works. If the file updates, your Apps Script is working correctly.')
+      setTimeout(() => setMessage(''), 8000)
+    } catch (error) {
+      setMessage(`Test failed: ${error.message}. Please check your Apps Script URL and deployment settings.`)
+      setTimeout(() => setMessage(''), 8000)
+    }
+  }
+
   return (
     <div className="admin">
       <div className="admin-container">
         <header className="admin-header">
           <h1>Vitas Pro Admin</h1>
           <p>Manage your products</p>
+          <button 
+            onClick={() => setShowDriveConfig(!showDriveConfig)}
+            className="drive-config-toggle"
+          >
+            {showDriveConfig ? 'Hide' : 'Show'} Google Drive Settings
+          </button>
         </header>
+
+        {showDriveConfig && (
+          <section className="drive-config-section">
+            <h2>Google Drive Configuration</h2>
+            <p className="config-instructions">
+              <strong>Step 1:</strong> Set up Google Apps Script (see instructions below)<br />
+              <strong>Step 2:</strong> Paste your Google Drive file URL and Apps Script URL below
+            </p>
+            <form onSubmit={handleDriveConfigSave} className="drive-config-form">
+              <div className="form-group">
+                <label htmlFor="driveUrl">Google Drive File URL</label>
+                <input
+                  type="url"
+                  id="driveUrl"
+                  value={driveConfig.fileUrl || ''}
+                  onChange={(e) => setDriveConfig({ ...driveConfig, fileUrl: e.target.value })}
+                  placeholder="https://drive.google.com/file/d/1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv/view"
+                />
+                <small className="help-text">
+                  Your Google Drive products.json file share link
+                </small>
+              </div>
+              <div className="form-group">
+                <label htmlFor="appsScriptUrl">Google Apps Script Web App URL</label>
+                <input
+                  type="url"
+                  id="appsScriptUrl"
+                  value={driveConfig.appsScriptUrl || ''}
+                  onChange={(e) => setDriveConfig({ ...driveConfig, appsScriptUrl: e.target.value })}
+                  placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"
+                />
+                <small className="help-text">
+                  Paste your Google Apps Script web app URL (see setup instructions)
+                </small>
+              </div>
+              <div className="config-buttons">
+                <button type="submit" className="submit-button">Save Configuration</button>
+                <button 
+                  type="button"
+                  onClick={testAppsScript}
+                  className="test-button"
+                >
+                  Test Apps Script Connection
+                </button>
+              </div>
+            </form>
+            <div className="apps-script-instructions">
+              <h3>Google Apps Script Setup:</h3>
+              <ol>
+                <li>Go to <a href="https://script.google.com" target="_blank" rel="noopener noreferrer">script.google.com</a></li>
+                <li>Create a new project</li>
+                <li>Paste the code from <code>google-apps-script.js</code> (see project files)</li>
+                <li>Replace <code>FILE_ID</code> with: <strong>1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv</strong></li>
+                <li>Click "Deploy" → "New deployment" → "Web app"</li>
+                <li>Set "Execute as" to "Me" and "Who has access" to "Anyone"</li>
+                <li>Copy the Web app URL and paste it above</li>
+              </ol>
+            </div>
+          </section>
+        )}
 
         {message && (
           <div className={`message ${message.includes('success') ? 'success' : 'error'}`}>

@@ -12,12 +12,14 @@ function Home() {
   });
 
   useEffect(() => {
-    // Load products from JSON file
+    // Load products from Google Drive JSON file
     const loadProducts = async () => {
       setLoading(true);
       try {
+        console.log("Loading products from Google Drive...");
         const loadedProducts = await getProducts();
         setProducts(loadedProducts);
+        console.log("Products loaded:", loadedProducts.length);
       } catch (error) {
         console.error("Error loading products:", error);
       } finally {
@@ -27,7 +29,7 @@ function Home() {
 
     loadProducts();
 
-    // Refresh products every 30 seconds to get updates
+    // Refresh products every 30 seconds to get updates from Google Drive
     const interval = setInterval(loadProducts, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -52,7 +54,14 @@ function Home() {
         <nav className="navbar">
           <div className="container">
             <div className="nav-content">
-              <h1 className="logo">Vitas Pro</h1>
+              <div className="logo-container">
+                <img
+                  src="/vitasprologo.jpg"
+                  alt="Vitas Pro Logo"
+                  className="logo-image"
+                />
+                <h1 className="logo">Vitas Pro</h1>
+              </div>
               <div className="nav-links">
                 <a href="#home">Home</a>
                 <a href="#products">Products</a>
