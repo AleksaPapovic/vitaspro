@@ -232,78 +232,131 @@ const updateGoogleDriveFile = async (appsScriptUrl, products) => {
   console.log("=== updateGoogleDriveFile called ===");
   console.log("Apps Script URL:", appsScriptUrl);
   console.log("Products to save:", products.length, "items");
-  console.log(
-    "Products data:",
-    JSON.stringify(products, null, 2).substring(0, 500) + "..."
-  );
 
   const requestBody = {
     action: "update",
     data: products,
   };
 
-  console.log(
-    "Request body:",
-    JSON.stringify(requestBody).substring(0, 500) + "..."
-  );
+  // Ensure URL ends with /exec (required for Google Apps Script Web Apps)
+  let url = appsScriptUrl.trim();
+  if (!url.endsWith("/exec") && !url.endsWith("/exec/")) {
+    url = url.replace(/\/$/, "") + "/exec";
+  }
 
-  // Try with CORS first to verify the update actually worked
-  try {
-    console.log("Trying with CORS enabled (to verify response)...");
-    const response = await fetch(appsScriptUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    });
+  console.log("Using URL:", url);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ CORS request failed:", response.status, errorText);
-      throw new Error(`Failed to update: ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log("✅ Update successful (CORS mode):", result);
-    console.log("=== updateGoogleDriveFile completed ===");
-    return result;
-  } catch (corsError) {
-    console.warn(
-      "⚠️ CORS request failed, trying no-cors mode:",
-      corsError.message
-    );
-
-    // Fallback to no-cors mode (can't verify response, but request is sent)
-    try {
-      console.log("Trying with no-cors mode...");
-      await fetch(appsScriptUrl, {
+  // Try multiple methods to handle CORS issues
+  const methods = [
+    // Method 1: Standard fetch with CORS
+    async () => {
+      console.log("Method 1: Trying standard fetch with CORS...");
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody),
-        mode: "no-cors", // Google Apps Script requires no-cors for web apps
       });
 
-      console.log(
-        "✅ Update request sent to Google Apps Script (no-cors mode)"
-      );
-      console.log(
-        "⚠️ Note: Cannot verify response in no-cors mode. Update may still be processing."
-      );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
 
-      // Wait longer to ensure the request is processed by Google Drive
-      console.log("Waiting for Google Drive to process update...");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || "Update failed");
+      }
+      return result;
+    },
 
-      console.log("=== updateGoogleDriveFile completed (no-cors) ===");
+    // Method 2: Form data approach (sometimes works better with Google Apps Script)
+    async () => {
+      console.log("Method 2: Trying form data approach...");
+      const formData = new FormData();
+      formData.append("action", "update");
+      formData.append("data", JSON.stringify(products));
+
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || "Update failed");
+      }
+      return result;
+    },
+
+    // Method 3: URL-encoded form data
+    async () => {
+      console.log("Method 3: Trying URL-encoded form data...");
+      const params = new URLSearchParams();
+      params.append("action", "update");
+      params.append("data", JSON.stringify(products));
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params.toString(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || "Update failed");
+      }
+      return result;
+    },
+
+    // Method 4: no-cors as last resort (can't verify response)
+    async () => {
+      console.log("Method 4: Trying no-cors mode (last resort)...");
+      await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+        mode: "no-cors",
+      });
+
+      // Wait for Google Drive to process
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       return { success: true, message: "Update request sent (no-cors mode)" };
-    } catch (noCorsError) {
-      console.error("❌ Both CORS and no-cors requests failed:", noCorsError);
-      throw new Error(
-        "Failed to update Google Drive file. Please check Apps Script URL and permissions."
-      );
+    },
+  ];
+
+  // Try each method in sequence
+  for (let i = 0; i < methods.length; i++) {
+    try {
+      const result = await methods[i]();
+      console.log(`✅ Update successful (method ${i + 1}):`, result);
+      console.log("=== updateGoogleDriveFile completed ===");
+      return result;
+    } catch (error) {
+      console.warn(`⚠️ Method ${i + 1} failed:`, error.message);
+      if (i === methods.length - 1) {
+        // Last method failed
+        console.error("❌ All methods failed to update Google Drive");
+        throw new Error(
+          `Failed to update Google Drive file: ${error.message}. Please check your Google Apps Script URL and deployment settings. Make sure the Web App is deployed with "Execute as: Me" and "Who has access: Anyone".`
+        );
+      }
+      // Continue to next method
     }
   }
 };
@@ -317,13 +370,21 @@ export const getProductsJSON = async () => {
 export const saveProduct = async (product) => {
   const products = await getProducts();
 
-  // Parse images array from comma or newline separated string
+  // Handle images - can be array or comma/newline separated string
   let imagesArray = [];
-  if (product.images && product.images.trim()) {
-    imagesArray = product.images
-      .split(/[,\n]/)
-      .map((url) => url.trim())
-      .filter((url) => url.length > 0);
+  if (product.images) {
+    if (Array.isArray(product.images)) {
+      // Already an array, just filter out empty strings
+      imagesArray = product.images.filter(
+        (url) => url && url.trim().length > 0
+      );
+    } else if (typeof product.images === "string" && product.images.trim()) {
+      // String format - parse from comma or newline separated
+      imagesArray = product.images
+        .split(/[,\n]/)
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0);
+    }
   }
 
   const newProduct = {

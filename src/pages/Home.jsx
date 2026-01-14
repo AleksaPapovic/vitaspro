@@ -47,7 +47,7 @@ function Home() {
     localStorage.setItem("vitaspro_cart", JSON.stringify(cart));
     setCartCount(cart.length);
     // Show notification
-    alert(`${product.name} added to cart!`);
+    alert(`${product.name} je dodato u korpu!`);
   };
 
   return (
@@ -65,9 +65,9 @@ function Home() {
                 <h1 className="logo">Vitas Pro</h1>
               </div>
               <div className="nav-links">
-                <a href="#home">Home</a>
-                <a href="#products">Products</a>
-                <a href="#about">About</a>
+                <a href="#home">Početna</a>
+                <a href="#products">Proizvodi</a>
+                <a href="#about">O nama</a>
                 <a href="/admin" className="admin-link">
                   Admin
                 </a>
@@ -85,12 +85,10 @@ function Home() {
         {/* Hero Banner */}
         <section id="home" className="hero-banner">
           <div className="hero-content">
-            <h1 className="hero-title">Discover Your Beauty</h1>
-            <p className="hero-subtitle">
-              Premium Cosmetics for the Modern Woman
-            </p>
+            <h1 className="hero-title">Otkrijte svoju lepotu</h1>
+            <p className="hero-subtitle">Premium kozmetika za modernu ženu</p>
             <a href="#products" className="shop-now-btn">
-              Shop Now
+              Kupite sada
             </a>
           </div>
         </section>
@@ -106,7 +104,7 @@ function Home() {
                   <div className="maui-loader-ring"></div>
                   <div className="maui-loader-ring"></div>
                 </div>
-                <p className="loader-text">Loading products...</p>
+                <p className="loader-text">Učitavanje proizvoda...</p>
               </div>
             </div>
           </section>
@@ -115,10 +113,10 @@ function Home() {
             <div className="container">
               <div className="empty-state">
                 <div className="empty-icon">💄</div>
-                <h3>No products yet</h3>
-                <p>Products will appear here once they're added</p>
+                <h3>Još nema proizvoda</h3>
+                <p>Proizvodi će se pojaviti ovde kada budu dodati</p>
                 <a href="/admin" className="admin-link-button">
-                  Go to Admin Page
+                  Idi na Admin stranicu
                 </a>
               </div>
             </div>
@@ -127,9 +125,9 @@ function Home() {
           <section id="products" className="products-section">
             <div className="container">
               <div className="section-header">
-                <h2 className="section-title">Our Products</h2>
+                <h2 className="section-title">Naši proizvodi</h2>
                 <p className="section-subtitle">
-                  Discover our premium collection
+                  Otkrijte našu premium kolekciju
                 </p>
               </div>
               <div className="products-grid">
@@ -148,7 +146,7 @@ function Home() {
                           e.target.src = "/placeholder.jpg";
                         }}
                       />
-                      <div className="product-badge">New</div>
+                      <div className="product-badge">Novo</div>
                       <div className="product-overlay">
                         <button
                           className="quick-view-btn"
@@ -157,7 +155,7 @@ function Home() {
                             navigate(`/product/${product.id}`);
                           }}
                         >
-                          Quick View
+                          Brzi pregled
                         </button>
                       </div>
                     </div>
@@ -174,7 +172,7 @@ function Home() {
                           className="add-to-cart-btn"
                           onClick={() => addToCart(product)}
                         >
-                          Add to Cart
+                          Dodaj u korpu
                         </button>
                       </div>
                     </div>
@@ -190,16 +188,16 @@ function Home() {
           <div className="container">
             <div className="about-content">
               <div className="about-text">
-                <h2>About Vitas Pro</h2>
+                <h2>O Vitas Pro</h2>
                 <p>
-                  At Vitas Pro, we believe that makeup is an art form and beauty
-                  comes from within. Our premium cosmetics are carefully crafted
-                  to enhance your natural beauty and help you express your
-                  unique style. We offer high-quality products that are
-                  cruelty-free and made with the finest ingredients.
+                  U Vitas Pro verujemo da je šminka umetnost i da lepota dolazi
+                  iznutra. Naša premium kozmetika je pažljivo kreirana da
+                  naglasi vašu prirodnu lepotu i pomogne vam da izrazite svoj
+                  jedinstveni stil. Nudimo visokokvalitetne proizvode koji su
+                  bez okrutnosti i napravljeni od najfinijih sastojaka.
                 </p>
                 <a href="#products" className="learn-more-btn">
-                  Explore Products
+                  Istražite proizvode
                 </a>
               </div>
               <div className="about-image">
@@ -212,21 +210,24 @@ function Home() {
         {/* Newsletter Section */}
         <section className="newsletter-section">
           <div className="container">
-            <h2>Subscribe to Our Newsletter</h2>
-            <p>Get the latest updates on new products and exclusive offers</p>
+            <h2>Prijavite se na naš newsletter</h2>
+            <p>
+              Dobijte najnovije informacije o novim proizvodima i ekskluzivnim
+              ponudama
+            </p>
             <form
               className="newsletter-form"
               onSubmit={(e) => {
                 e.preventDefault();
-                alert("Thank you for subscribing!");
+                alert("Hvala vam što ste se prijavili!");
               }}
             >
               <input
                 type="email"
-                placeholder="Enter your email address"
+                placeholder="Unesite vašu email adresu"
                 required
               />
-              <button type="submit">Subscribe</button>
+              <button type="submit">Prijavite se</button>
             </form>
           </div>
         </section>
@@ -237,19 +238,19 @@ function Home() {
           <div className="footer-content">
             <div className="footer-section">
               <h3>Vitas Pro</h3>
-              <p>Premium cosmetics for the modern woman</p>
+              <p>Premium kozmetika za modernu ženu</p>
             </div>
             <div className="footer-section">
-              <h4>Quick Links</h4>
+              <h4>Brzi linkovi</h4>
               <ul>
                 <li>
-                  <a href="#home">Home</a>
+                  <a href="#home">Početna</a>
                 </li>
                 <li>
-                  <a href="#products">Products</a>
+                  <a href="#products">Proizvodi</a>
                 </li>
                 <li>
-                  <a href="#about">About</a>
+                  <a href="#about">O nama</a>
                 </li>
                 <li>
                   <a href="/admin">Admin</a>
@@ -257,13 +258,13 @@ function Home() {
               </ul>
             </div>
             <div className="footer-section">
-              <h4>Contact</h4>
+              <h4>Kontakt</h4>
               <p>Email: info@vitaspro.com</p>
               <p>Phone: +1 (555) 123-4567</p>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2024 Vitas Pro. All rights reserved.</p>
+            <p>&copy; 2024 Vitas Pro. Sva prava zadržana.</p>
           </div>
         </div>
       </footer>

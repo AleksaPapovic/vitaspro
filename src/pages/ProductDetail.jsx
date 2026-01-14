@@ -19,9 +19,8 @@ function ProductDetail() {
         setProducts(allProducts)
         const foundProduct = allProducts.find(p => p.id === id)
         setProduct(foundProduct)
-        if (foundProduct && foundProduct.images && foundProduct.images.length > 0) {
-          setSelectedImageIndex(0)
-        }
+        // Always reset to first image when product loads
+        setSelectedImageIndex(0)
       } catch (error) {
         console.error('Error loading product:', error)
       } finally {
@@ -37,19 +36,35 @@ function ProductDetail() {
 
   const getProductImages = () => {
     if (!product) return []
-    // If product has images array, use it; otherwise use single image
+    
+    let imagesArray = []
+    
+    // If product has images array, use it
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      return product.images
+      imagesArray = [...product.images]
     }
-    // Fallback to single image
-    return product.image ? [product.image] : []
+    
+    // Always include the main image if it exists and is not already in the array
+    if (product.image) {
+      const mainImageIncluded = imagesArray.some(img => img === product.image || img.trim() === product.image.trim())
+      if (!mainImageIncluded) {
+        // Add main image at the beginning
+        imagesArray = [product.image, ...imagesArray]
+      }
+    }
+    
+    // Filter out any empty strings
+    imagesArray = imagesArray.filter(img => img && img.trim().length > 0)
+    
+    // If no images at all, return empty array
+    return imagesArray
   }
 
   const addToCart = () => {
     const cart = JSON.parse(localStorage.getItem('vitaspro_cart') || '[]')
     cart.push(product)
     localStorage.setItem('vitaspro_cart', JSON.stringify(cart))
-    alert(`${product.name} added to cart!`)
+    alert(`${product.name} je dodato u korpu!`)
   }
 
   if (loading) {
@@ -62,7 +77,7 @@ function ProductDetail() {
             <div className="maui-loader-ring"></div>
             <div className="maui-loader-ring"></div>
           </div>
-          <p className="loader-text">Loading product...</p>
+          <p className="loader-text">Učitavanje proizvoda...</p>
         </div>
       </div>
     )
@@ -73,9 +88,9 @@ function ProductDetail() {
       <div className="product-detail-page">
         <div className="container">
           <div className="product-not-found">
-            <h2>Product not found</h2>
+            <h2>Proizvod nije pronađen</h2>
             <button onClick={() => navigate('/')} className="back-button">
-              Back to Home
+              Nazad na početnu
             </button>
           </div>
         </div>
@@ -84,29 +99,35 @@ function ProductDetail() {
   }
 
   const images = getProductImages()
-  const mainImage = images[selectedImageIndex] || images[0]
+  const mainImage = images.length > 0 ? (images[selectedImageIndex] || images[0]) : null
 
   return (
     <div className="product-detail-page">
       <div className="container">
         <button onClick={() => navigate(-1)} className="back-button">
-          ← Back
+          ← Nazad
         </button>
 
         <div className="product-detail-content">
           <div className="product-detail-images">
             <div className="main-image-container">
-              <img
-                src={getImageUrl(mainImage)}
-                alt={product.name}
-                className="main-product-image"
-                onError={(e) => {
-                  e.target.src = '/placeholder.jpg'
-                }}
-              />
+              {mainImage ? (
+                <img
+                  src={getImageUrl(mainImage)}
+                  alt={product.name}
+                  className="main-product-image"
+                  onError={(e) => {
+                    e.target.src = '/placeholder.jpg'
+                  }}
+                />
+              ) : (
+                <div className="no-image-placeholder">
+                  <span>Slika nije dostupna</span>
+                </div>
+              )}
             </div>
             
-            {images.length > 1 && (
+            {images.length > 0 && (
               <div className="thumbnail-gallery">
                 {images.map((img, index) => (
                   <div
@@ -138,22 +159,22 @@ function ProductDetail() {
             )}
 
             <div className="product-detail-price">
-              <span className="price-label">Price:</span>
+              <span className="price-label">Cena:</span>
               <span className="price-value">${product.price}</span>
             </div>
 
             <div className="product-detail-actions">
               <button onClick={addToCart} className="add-to-cart-button-large">
-                Add to Cart
+                Dodaj u korpu
               </button>
               <button onClick={() => navigate('/')} className="continue-shopping-button">
-                Continue Shopping
+                Nastavi kupovinu
               </button>
             </div>
 
-            {product.images && product.images.length > 1 && (
+            {images.length > 0 && (
               <div className="product-images-count">
-                {product.images.length} images available
+                {images.length} {images.length === 1 ? 'slika' : images.length < 5 ? 'slike' : 'slika'} dostupno
               </div>
             )}
           </div>

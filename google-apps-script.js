@@ -3,22 +3,29 @@
 
 const FILE_ID = "1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv";
 
+// Helper function to create CORS-enabled response
+function createCorsResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
   try {
-    // Handle CORS preflight
-    if (e.parameter && e.parameter.method === "OPTIONS") {
-      return ContentService.createTextOutput("").setMimeType(
-        ContentService.MimeType.TEXT
-      );
-    }
-
     // Parse the incoming data
     let data;
     try {
-      data = JSON.parse(e.postData.contents);
+      if (e.postData && e.postData.contents) {
+        data = JSON.parse(e.postData.contents);
+      } else if (e.parameter) {
+        data = e.parameter;
+      } else {
+        throw new Error("No data received");
+      }
     } catch (parseError) {
-      // Try alternative parsing method
-      data = e.parameter || JSON.parse(e.postData.getDataAsString());
+      return createCorsResponse({
+        success: false,
+        message: "Failed to parse request: " + parseError.toString(),
+      });
     }
 
     if (data.action === "update" && data.data) {
@@ -31,30 +38,25 @@ function doPost(e) {
       // Update the file content
       file.setContent(jsonContent);
 
-      // Return success response with CORS headers
-      return ContentService.createTextOutput(
-        JSON.stringify({
-          success: true,
-          message: "File updated successfully",
-          timestamp: new Date().toISOString(),
-        })
-      ).setMimeType(ContentService.MimeType.JSON);
+      // Return success response
+      return createCorsResponse({
+        success: true,
+        message: "File updated successfully",
+        timestamp: new Date().toISOString(),
+        itemsCount: data.data.length,
+      });
     } else {
-      return ContentService.createTextOutput(
-        JSON.stringify({
-          success: false,
-          message: "Invalid request - missing action or data",
-        })
-      ).setMimeType(ContentService.MimeType.JSON);
+      return createCorsResponse({
+        success: false,
+        message: "Invalid request - missing action or data",
+      });
     }
   } catch (error) {
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        success: false,
-        message: error.toString(),
-        stack: error.stack,
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return createCorsResponse({
+      success: false,
+      message: error.toString(),
+      stack: error.stack ? error.stack.toString() : "No stack trace",
+    });
   }
 }
 
