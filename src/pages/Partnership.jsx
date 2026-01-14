@@ -46,6 +46,7 @@ function Partnership() {
                 <a href="/">Početna</a>
                 <a href="/#products">Proizvodi</a>
                 <a href="/#about">O nama</a>
+                <a href="/partnership">Partnerstvo</a>
                 <a href="/admin" className="admin-link">
                   Admin
                 </a>

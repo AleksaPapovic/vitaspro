@@ -56,11 +56,69 @@ export const categories = {
   },
   MASAZA: {
     name: "MASAŽA",
-    subcategories: [],
+    subcategories: {
+      ZA_FRIZERE: {
+        name: "ZA FRIZERE",
+        items: [],
+      },
+      ZA_KOZMETICARE: {
+        name: "ZA KOZMETIČARE",
+        items: [],
+      },
+      ZA_MASAZU: {
+        name: "ZA MASAŽU",
+        items: [],
+      },
+      ZA_MANIKIR: {
+        name: "ZA MANIKIR",
+        items: [],
+      },
+      ZA_PEDIKIR: {
+        name: "ZA PEDIKIR",
+        items: [],
+      },
+      ZA_DEPILACIJU: {
+        name: "ZA DEPILACIJU",
+        items: [],
+      },
+    },
   },
   OPREMA_ZA_SALONE: {
     name: "OPREMA ZA SALONE",
-    subcategories: [],
+    subcategories: {
+      ZA_FRIZERE: {
+        name: "ZA FRIZERE",
+        items: [],
+      },
+      ZA_KOZMETICARE: {
+        name: "ZA KOZMETIČARE",
+        items: [],
+      },
+      ZA_MASAZU: {
+        name: "ZA MASAŽU",
+        items: [],
+      },
+      ZA_MANIKIR: {
+        name: "ZA MANIKIR",
+        items: [],
+      },
+      ZA_PEDIKIR: {
+        name: "ZA PEDIKIR",
+        items: [],
+      },
+      ZA_DEPILACIJU: {
+        name: "ZA DEPILACIJU",
+        items: [
+          "Šećerna pasta - LIKE SUGAR WAX",
+          "Hladna depilacija - Patrone",
+          "Hladna depilacija - Limenke",
+          "Topla depilacija - Film vosak",
+          "Topla depilacija - ostalo",
+          "Kozmetika za depilaciju",
+          "Pribor za depilaciju",
+        ],
+      },
+    },
   },
 };
 
@@ -69,7 +127,7 @@ export const getCategoriesList = () => {
   return Object.values(categories).map((cat) => ({
     id: cat.name,
     name: cat.name,
-    hasSubgroups: !!cat.subcategories?.NEGA_LICA,
+    hasSubgroups: !!cat.subcategories?.NEGA_LICA || !!cat.subcategories?.ZA_FRIZERE || !!cat.subcategories?.ZA_MASAZU,
   }));
 };
 
@@ -81,8 +139,8 @@ export const getSubcategories = (categoryName) => {
 
   if (!category) return [];
 
-  // Ako ima podgrupe (kao PREPARATI ZA LICE I TELO)
-  if (category.subcategories?.NEGA_LICA) {
+  // Ako ima podgrupe (kao PREPARATI ZA LICE I TELO, OPREMA ZA SALONE ili MASAŽA)
+  if (category.subcategories?.NEGA_LICA || category.subcategories?.ZA_FRIZERE || category.subcategories?.ZA_MASAZU) {
     return category.subcategories;
   }
 

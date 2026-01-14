@@ -14,6 +14,7 @@ function Home() {
     return cart.length;
   });
   const [showCategoriesMenu, setShowCategoriesMenu] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     // Load products from Google Drive JSON file
@@ -85,55 +86,126 @@ function Home() {
                   </a>
                   {showCategoriesMenu && (
                     <div className="categories-dropdown">
-                      {getCategoriesList().map((category) => (
-                        <div key={category.id} className="category-item">
-                          <span className="category-name">{category.name}</span>
-                          {category.hasSubgroups ? (
-                            <div className="subcategories-group">
-                              {Object.values(
-                                getSubcategories(category.name)
-                              ).map((subgroup) => (
-                                <div key={subgroup.name} className="subgroup">
-                                  <div className="subgroup-name">
-                                    {subgroup.name}
-                                  </div>
-                                  <div className="subgroup-items">
-                                    {subgroup.items.map((item) => (
+                      <div className="categories-panel">
+                        <div className="categories-sidebar">
+                          {getCategoriesList()
+                            .slice(0, 5)
+                            .map((category, index) => (
+                              <div
+                                key={category.id}
+                                className={`category-sidebar-item ${
+                                  selectedCategory === category.id ||
+                                  (!selectedCategory && index === 0)
+                                    ? "active"
+                                    : ""
+                                }`}
+                                onMouseEnter={() =>
+                                  setSelectedCategory(category.id)
+                                }
+                              >
+                                <span className="category-sidebar-name">
+                                  {category.name}
+                                </span>
+                                <span className="category-arrow">→</span>
+                              </div>
+                            ))}
+                        </div>
+                        <div className="subcategories-panel">
+                          {(() => {
+                            const activeCategoryId =
+                              selectedCategory ||
+                              getCategoriesList().slice(0, 5)[0]?.id;
+                            if (!activeCategoryId) {
+                              return (
+                                <div className="subcategories-placeholder">
+                                  <p>Izaberite kategoriju sa leve strane</p>
+                                </div>
+                              );
+                            }
+                            const category = getCategoriesList().find(
+                              (c) => c.id === activeCategoryId
+                            );
+                            if (!category) return null;
+
+                            const subcats = getSubcategories(category.name);
+
+                            // Ako ima podgrupe (kao PREPARATI ZA LICE I TELO ili OPREMA ZA SALONE)
+                            if (
+                              category.hasSubgroups &&
+                              typeof subcats === "object" &&
+                              !Array.isArray(subcats)
+                            ) {
+                              return (
+                                <div className="subcategories-content">
+                                  {Object.values(subcats).map((subgroup) => (
+                                    <div
+                                      key={subgroup.name}
+                                      className="subgroup-section"
+                                    >
+                                      <h3 className="subgroup-title">
+                                        {subgroup.name}
+                                      </h3>
+                                      {subgroup.items &&
+                                      subgroup.items.length > 0 ? (
+                                        <div className="subgroup-items-grid">
+                                          {subgroup.items.map((item) => (
+                                            <a
+                                              key={item}
+                                              href="#products"
+                                              className="subcategory-item"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                setShowCategoriesMenu(false);
+                                              }}
+                                            >
+                                              {item}
+                                            </a>
+                                          ))}
+                                        </div>
+                                      ) : (
+                                        <p className="subgroup-empty">
+                                          Proizvodi uskoro...
+                                        </p>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            }
+
+                            // Ako su podkategorije običan niz
+                            if (Array.isArray(subcats) && subcats.length > 0) {
+                              return (
+                                <div className="subcategories-content">
+                                  <div className="subcategories-grid">
+                                    {subcats.map((subcat) => (
                                       <a
-                                        key={item}
+                                        key={subcat}
                                         href="#products"
-                                        className="subcategory-link"
+                                        className="subcategory-item"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           setShowCategoriesMenu(false);
                                         }}
                                       >
-                                        {item}
+                                        {subcat}
                                       </a>
                                     ))}
                                   </div>
                                 </div>
-                              ))}
-                            </div>
-                          ) : getSubcategories(category.name).length > 0 ? (
-                            <div className="subcategories-list">
-                              {getSubcategories(category.name).map((subcat) => (
-                                <a
-                                  key={subcat}
-                                  href="#products"
-                                  className="subcategory-link"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowCategoriesMenu(false);
-                                  }}
-                                >
-                                  {subcat}
-                                </a>
-                              ))}
-                            </div>
-                          ) : null}
+                              );
+                            }
+
+                            return (
+                              <div className="subcategories-content">
+                                <p className="subcategories-empty">
+                                  Proizvodi uskoro...
+                                </p>
+                              </div>
+                            );
+                          })()}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -156,7 +228,9 @@ function Home() {
         {/* Hero Banner */}
         <section id="home" className="hero-banner">
           <div className="hero-content">
-            <h1 className="hero-title">Otkrijte svoju lepotu</h1>
+            <h1 className="hero-title">
+              Vaš pouzdan partner u profesionalnoj kozmetici
+            </h1>
             <p className="hero-subtitle">Premium kozmetika za modernu ženu</p>
             <a href="#products" className="shop-now-btn">
               Kupite sada
