@@ -72,7 +72,31 @@ function Home() {
                 <div
                   className="categories-menu-wrapper"
                   onMouseEnter={() => setShowCategoriesMenu(true)}
-                  onMouseLeave={() => setShowCategoriesMenu(false)}
+                  onMouseLeave={(e) => {
+                    const relatedTarget = e.relatedTarget;
+                    const currentTarget = e.currentTarget;
+
+                    // Ako relatedTarget ne postoji ili nije deo wrapper-a
+                    if (
+                      !relatedTarget ||
+                      !currentTarget.contains(relatedTarget)
+                    ) {
+                      // Dodaj mali delay da omogući prelazak sa linka na dropdown
+                      setTimeout(() => {
+                        const dropdown = document.querySelector(
+                          ".categories-dropdown"
+                        );
+                        const isHoveringWrapper =
+                          currentTarget.matches(":hover");
+                        const isHoveringDropdown = dropdown?.matches(":hover");
+
+                        if (!isHoveringWrapper && !isHoveringDropdown) {
+                          setShowCategoriesMenu(false);
+                          setSelectedCategory(null);
+                        }
+                      }, 200);
+                    }
+                  }}
                 >
                   <a
                     href="#products"
@@ -85,7 +109,33 @@ function Home() {
                     Kategorije ▼
                   </a>
                   {showCategoriesMenu && (
-                    <div className="categories-dropdown">
+                    <div
+                      className="categories-dropdown"
+                      onMouseEnter={() => setShowCategoriesMenu(true)}
+                      onMouseLeave={(e) => {
+                        // Proveri da li miš napušta dropdown
+                        const relatedTarget = e.relatedTarget;
+                        const wrapper = e.currentTarget.closest(
+                          ".categories-menu-wrapper"
+                        );
+
+                        // Ako miš napušta dropdown i wrapper, zatvori meni
+                        if (
+                          !relatedTarget ||
+                          !wrapper?.contains(relatedTarget)
+                        ) {
+                          setTimeout(() => {
+                            if (
+                              !wrapper?.matches(":hover") &&
+                              !e.currentTarget.matches(":hover")
+                            ) {
+                              setShowCategoriesMenu(false);
+                              setSelectedCategory(null);
+                            }
+                          }, 150);
+                        }
+                      }}
+                    >
                       <div className="categories-panel">
                         <div className="categories-sidebar">
                           {getCategoriesList()
