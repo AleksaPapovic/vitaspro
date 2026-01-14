@@ -5,11 +5,14 @@ const GOOGLE_DRIVE_FILE_URL =
   "https://drive.google.com/uc?export=download&id=1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv";
 
 // Read products directly from Google Drive - no cache, always fresh
-export const getProducts = async () => {
+export const getProducts = async (forceRefresh = false) => {
   const fileId = "1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv";
 
+  // Add cache-busting parameter to ensure fresh data
+  const cacheBuster = forceRefresh ? `&t=${Date.now()}` : "";
+
   // Try multiple download URL formats with CORS proxy
-  const driveUrl = `https://drive.google.com/uc?export=download&id=${fileId}&confirm=t`;
+  const driveUrl = `https://drive.google.com/uc?export=download&id=${fileId}&confirm=t${cacheBuster}`;
 
   // CORS proxy services (try multiple in case one is down)
   const corsProxies = [
@@ -171,87 +174,133 @@ export const getProducts = async () => {
 // Save products - updates Google Drive file via Apps Script (no localStorage cache)
 export const saveProducts = async (products) => {
   try {
+    console.log("=== saveProducts called ===");
+    console.log("Products array length:", products.length);
+    console.log(
+      "Products:",
+      products.map((p) => ({ id: p.id, name: p.name }))
+    );
+
     // Get Google Apps Script URL from config
     const driveConfig = localStorage.getItem("vitaspro_drive_config");
-    if (driveConfig) {
-      try {
-        const config = JSON.parse(driveConfig);
-        if (config.appsScriptUrl && config.appsScriptUrl.trim() !== "") {
-          console.log("Attempting to update Google Drive via Apps Script...");
-          // Update Google Drive file via Apps Script
-          const result = await updateGoogleDriveFile(
-            config.appsScriptUrl,
-            products
-          );
-          console.log("Google Drive update result:", result);
-          return products;
-        } else {
-          console.warn(
-            "No Apps Script URL configured. File will not be updated on Google Drive."
-          );
-          throw new Error(
-            "Google Apps Script URL not configured. Please set it up in admin settings."
-          );
-        }
-      } catch (e) {
-        console.error("Error updating Google Drive:", e);
-        throw e; // Re-throw to show error to user
-      }
-    } else {
+    if (!driveConfig) {
+      console.error("❌ No drive config found in localStorage");
       throw new Error(
         "Google Drive configuration not found. Please configure in admin settings."
       );
     }
+
+    try {
+      const config = JSON.parse(driveConfig);
+      console.log("Drive config loaded:", {
+        hasAppsScriptUrl: !!config.appsScriptUrl,
+        appsScriptUrl: config.appsScriptUrl
+          ? config.appsScriptUrl.substring(0, 50) + "..."
+          : "none",
+      });
+
+      if (!config.appsScriptUrl || config.appsScriptUrl.trim() === "") {
+        console.warn(
+          "❌ No Apps Script URL configured. File will not be updated on Google Drive."
+        );
+        throw new Error(
+          "Google Apps Script URL not configured. Please set it up in admin settings."
+        );
+      }
+
+      console.log("✅ Apps Script URL found, calling updateGoogleDriveFile...");
+      // Update Google Drive file via Apps Script
+      const result = await updateGoogleDriveFile(
+        config.appsScriptUrl,
+        products
+      );
+      console.log("✅ Google Drive update result:", result);
+      console.log("=== saveProducts completed ===");
+      return products;
+    } catch (e) {
+      console.error("❌ Error updating Google Drive:", e);
+      throw e; // Re-throw to show error to user
+    }
   } catch (error) {
-    console.error("Error saving products:", error);
+    console.error("❌ Error in saveProducts:", error);
     throw error;
   }
 };
 
 // Update Google Drive file via Google Apps Script
 const updateGoogleDriveFile = async (appsScriptUrl, products) => {
-  try {
-    console.log("Updating Google Drive file via Apps Script:", appsScriptUrl);
+  console.log("=== updateGoogleDriveFile called ===");
+  console.log("Apps Script URL:", appsScriptUrl);
+  console.log("Products to save:", products.length, "items");
+  console.log(
+    "Products data:",
+    JSON.stringify(products, null, 2).substring(0, 500) + "..."
+  );
 
-    await fetch(appsScriptUrl, {
+  const requestBody = {
+    action: "update",
+    data: products,
+  };
+
+  console.log(
+    "Request body:",
+    JSON.stringify(requestBody).substring(0, 500) + "..."
+  );
+
+  // Try with CORS first to verify the update actually worked
+  try {
+    console.log("Trying with CORS enabled (to verify response)...");
+    const response = await fetch(appsScriptUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        action: "update",
-        data: products,
-      }),
-      mode: "no-cors", // Google Apps Script requires no-cors for web apps
+      body: JSON.stringify(requestBody),
     });
 
-    // With no-cors, we can't read the response, but the request was sent
-    console.log("Update request sent to Google Apps Script");
-    return { success: true, message: "Update request sent" };
-  } catch (error) {
-    console.error("Error updating Google Drive file:", error);
-    // Try with CORS enabled as fallback
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ CORS request failed:", response.status, errorText);
+      throw new Error(`Failed to update: ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log("✅ Update successful (CORS mode):", result);
+    console.log("=== updateGoogleDriveFile completed ===");
+    return result;
+  } catch (corsError) {
+    console.warn(
+      "⚠️ CORS request failed, trying no-cors mode:",
+      corsError.message
+    );
+
+    // Fallback to no-cors mode (can't verify response, but request is sent)
     try {
-      const response = await fetch(appsScriptUrl, {
+      console.log("Trying with no-cors mode...");
+      await fetch(appsScriptUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action: "update",
-          data: products,
-        }),
+        body: JSON.stringify(requestBody),
+        mode: "no-cors", // Google Apps Script requires no-cors for web apps
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to update: ${errorText}`);
-      }
+      console.log(
+        "✅ Update request sent to Google Apps Script (no-cors mode)"
+      );
+      console.log(
+        "⚠️ Note: Cannot verify response in no-cors mode. Update may still be processing."
+      );
 
-      const result = await response.json();
-      return result;
-    } catch (fallbackError) {
-      console.error("Fallback update also failed:", fallbackError);
+      // Wait longer to ensure the request is processed by Google Drive
+      console.log("Waiting for Google Drive to process update...");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      console.log("=== updateGoogleDriveFile completed (no-cors) ===");
+      return { success: true, message: "Update request sent (no-cors mode)" };
+    } catch (noCorsError) {
+      console.error("❌ Both CORS and no-cors requests failed:", noCorsError);
       throw new Error(
         "Failed to update Google Drive file. Please check Apps Script URL and permissions."
       );
@@ -267,11 +316,22 @@ export const getProductsJSON = async () => {
 
 export const saveProduct = async (product) => {
   const products = await getProducts();
+
+  // Parse images array from comma or newline separated string
+  let imagesArray = [];
+  if (product.images && product.images.trim()) {
+    imagesArray = product.images
+      .split(/[,\n]/)
+      .map((url) => url.trim())
+      .filter((url) => url.length > 0);
+  }
+
   const newProduct = {
     id: Date.now().toString(),
     name: product.name,
     price: product.price,
     image: product.image,
+    images: imagesArray.length > 0 ? imagesArray : undefined,
     description: product.description || "",
     createdAt: new Date().toISOString(),
   };
@@ -281,9 +341,65 @@ export const saveProduct = async (product) => {
 };
 
 export const deleteProduct = async (id) => {
-  const products = await getProducts();
-  const filtered = products.filter((p) => p.id !== id);
-  await saveProducts(filtered);
+  try {
+    console.log("=== deleteProduct function called ===");
+    console.log("Product ID to delete:", id);
+    console.log("Type of ID:", typeof id);
+
+    const products = await getProducts();
+    console.log("Current products before delete:", products.length);
+    console.log(
+      "All product IDs:",
+      products.map((p) => ({ id: p.id, type: typeof p.id, name: p.name }))
+    );
+
+    // Try both string and number comparison
+    const filtered = products.filter((p) => {
+      const matches = String(p.id) === String(id);
+      if (matches) {
+        console.log(`Found matching product: ${p.name} (id: ${p.id})`);
+      }
+      return !matches;
+    });
+
+    console.log("Products after filter:", filtered.length);
+    console.log(
+      "Deleted product IDs:",
+      products.filter((p) => String(p.id) === String(id)).map((p) => p.name)
+    );
+
+    if (filtered.length === products.length) {
+      console.error(
+        "ERROR: Product not found! Available IDs:",
+        products.map((p) => p.id)
+      );
+      throw new Error(
+        `Product with id "${id}" not found. Available IDs: ${products
+          .map((p) => p.id)
+          .join(", ")}`
+      );
+    }
+
+    console.log("=== Saving updated products to Google Drive ===");
+    console.log(
+      "Products to save:",
+      filtered.map((p) => ({ id: p.id, name: p.name }))
+    );
+    console.log("Full products array:", JSON.stringify(filtered, null, 2));
+
+    try {
+      await saveProducts(filtered);
+      console.log("✅ Product deleted successfully and saved to Google Drive");
+    } catch (saveError) {
+      console.error("❌ Error saving to Google Drive:", saveError);
+      throw saveError;
+    }
+
+    return filtered;
+  } catch (error) {
+    console.error("Error in deleteProduct:", error);
+    throw error;
+  }
 };
 
 export const updateProduct = async (id, updates) => {

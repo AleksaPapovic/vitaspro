@@ -10,6 +10,7 @@ function Admin() {
     name: '',
     price: '',
     image: '',
+    images: '', // Comma-separated Google Drive URLs
     description: ''
   })
   const [message, setMessage] = useState('')
@@ -30,15 +31,21 @@ function Admin() {
     loadProducts()
   }, [])
 
-  const loadProducts = async () => {
+  const loadProducts = async (forceRefresh = false) => {
     setLoading(true)
     try {
-      const loadedProducts = await getProducts()
+      console.log('Loading products from Google Drive...', forceRefresh ? '(force refresh)' : '')
+      const loadedProducts = await getProducts(forceRefresh)
+      console.log('Loaded products:', loadedProducts.length)
+      console.log('Product IDs:', loadedProducts.map(p => p.id))
       setProducts(loadedProducts)
+      console.log('Products state updated')
+      return loadedProducts
     } catch (error) {
       console.error('Error loading products:', error)
       setMessage('Error loading products')
       setTimeout(() => setMessage(''), 3000)
+      return []
     } finally {
       setLoading(false)
     }
@@ -57,7 +64,7 @@ function Admin() {
       setMessage('Saving product...')
       await saveProduct(formData)
       await loadProducts()
-      setFormData({ name: '', price: '', image: '', description: '' })
+      setFormData({ name: '', price: '', image: '', images: '', description: '' })
       setMessage('Product added successfully! Google Drive file updated.')
       setTimeout(() => setMessage(''), 3000)
     } catch (error) {
@@ -72,14 +79,63 @@ function Admin() {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         setMessage('Deleting product...')
-        await deleteProduct(id)
-        await loadProducts()
+        console.log('=== DELETE START ===')
+        console.log('Product ID to delete:', id)
+        console.log('Current products before delete:', products.length)
+        console.log('Product IDs:', products.map(p => p.id))
+        
+        // Optimistically update the UI first (use string comparison to match deleteProduct logic)
+        const productToDelete = products.find(p => String(p.id) === String(id))
+        if (!productToDelete) {
+          console.error('Product not found in current list!')
+          console.error('Looking for ID:', id, 'Type:', typeof id)
+          console.error('Available IDs:', products.map(p => ({ id: p.id, type: typeof p.id, name: p.name })))
+          throw new Error(`Product with id "${id}" not found in current list`)
+        }
+        
+        // Update UI immediately
+        const filteredProducts = products.filter(p => String(p.id) !== String(id))
+        setProducts(filteredProducts)
+        console.log('UI updated immediately, products count:', filteredProducts.length)
+        
+        // Delete the product (this will update Google Drive)
+        console.log('Calling deleteProduct...')
+        const result = await deleteProduct(id)
+        console.log('deleteProduct completed, result:', result)
+        console.log('Expected product count after delete:', result.length)
+        
+        // Wait longer for Google Drive to update (same as add)
+        console.log('Waiting for Google Drive to process update...')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Reload products with force refresh to bypass any cache
+        console.log('Reloading products from Google Drive (force refresh)...')
+        const reloadedProducts = await loadProducts(true)
+        console.log('Products reloaded, count:', reloadedProducts.length)
+        console.log('Reloaded product IDs:', reloadedProducts.map(p => p.id))
+        
+        // Verify the delete worked
+        const deletedProductStillExists = reloadedProducts.some(p => String(p.id) === String(id))
+        if (deletedProductStillExists) {
+          console.error('⚠️ WARNING: Deleted product still exists in Google Drive!')
+          console.error('This means the Google Drive update may not have completed yet.')
+          console.error('Please wait a few seconds and refresh manually, or check your Google Apps Script.')
+          setMessage('Product deleted from UI, but Google Drive update may still be processing. Please refresh in a few seconds.')
+        } else {
+          console.log('✅ Verified: Deleted product is no longer in Google Drive')
+          setMessage('Product deleted successfully! Google Drive file updated.')
+        }
+        
+        console.log('=== DELETE END ===')
+        
         setMessage('Product deleted successfully! Google Drive file updated.')
         setTimeout(() => setMessage(''), 3000)
       } catch (error) {
-        console.error('Delete error:', error)
+        console.error('=== DELETE ERROR ===', error)
+        // Reload products to get the correct state
+        await loadProducts()
         const errorMsg = error.message || 'Error deleting product'
-        setMessage(`${errorMsg}. Please check Google Apps Script configuration in settings.`)
+        setMessage(`Error: ${errorMsg}. Please check Google Apps Script configuration in settings.`)
         setTimeout(() => setMessage(''), 8000)
       }
     }
@@ -241,7 +297,7 @@ function Admin() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="image">Google Drive Image URL *</label>
+                <label htmlFor="image">Main Image URL (Google Drive) *</label>
                 <input
                   type="url"
                   id="image"
@@ -251,9 +307,25 @@ function Admin() {
                   required
                 />
                 <small className="help-text">
-                  <strong>Important:</strong> Paste your Google Drive share link here (e.g., https://drive.google.com/file/d/1-ZWT4D_5bxCT4Rr0FUeei_lZCVWyaDib/view). 
+                  Main product image (used in product grid)
+                </small>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="images">Additional Images (Optional)</label>
+                <textarea
+                  id="images"
+                  value={formData.images}
+                  onChange={(e) => setFormData({ ...formData, images: e.target.value })}
+                  placeholder="Paste multiple Google Drive URLs, one per line or separated by commas"
+                  rows="4"
+                />
+                <small className="help-text">
+                  Add more product images for the detail page. Paste Google Drive URLs, one per line or separated by commas.
                   <br />
-                  The file MUST be set to "Anyone with the link can view" in Google Drive sharing settings for images to display correctly.
+                  <strong>Example:</strong><br />
+                  https://drive.google.com/file/d/IMAGE1_ID/view<br />
+                  https://drive.google.com/file/d/IMAGE2_ID/view
                 </small>
               </div>
 

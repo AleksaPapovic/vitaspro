@@ -55,7 +55,7 @@
 }
 
 .nav-links a {
-  color: #333;
+  color: #e6e6e6;
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
@@ -570,6 +570,93 @@
 }
 
 /* Empty State */
+/* Professional Maui Loader */
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem;
+  min-height: 400px;
+}
+
+.maui-loader {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 2rem;
+}
+
+.maui-loader-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid transparent;
+  border-top-color: #ff6b9d;
+  border-radius: 50%;
+  animation: maui-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.maui-loader-ring:nth-child(1) {
+  animation-delay: -0.45s;
+  border-top-color: #ff6b9d;
+}
+
+.maui-loader-ring:nth-child(2) {
+  animation-delay: -0.3s;
+  width: 70%;
+  height: 70%;
+  top: 15%;
+  left: 15%;
+  border-top-color: #c44569;
+}
+
+.maui-loader-ring:nth-child(3) {
+  animation-delay: -0.15s;
+  width: 50%;
+  height: 50%;
+  top: 25%;
+  left: 25%;
+  border-top-color: #ff6b9d;
+  opacity: 0.8;
+}
+
+.maui-loader-ring:nth-child(4) {
+  width: 30%;
+  height: 30%;
+  top: 35%;
+  left: 35%;
+  border-top-color: #c44569;
+  opacity: 0.6;
+}
+
+@keyframes maui-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loader-text {
+  font-size: 1.1rem;
+  color: #666;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  animation: loader-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loader-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;

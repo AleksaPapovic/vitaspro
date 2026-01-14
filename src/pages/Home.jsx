@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getProducts } from "../utils/storage";
 import { getGoogleDriveImageUrl } from "../utils/imageHelper";
 import "./Home.css";
 
 function Home() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cartCount, setCartCount] = useState(() => {
@@ -97,9 +99,14 @@ function Home() {
         {loading ? (
           <section id="products" className="products-section">
             <div className="container">
-              <div className="empty-state">
-                <div className="empty-icon">⏳</div>
-                <h3>Loading products...</h3>
+              <div className="loader-container">
+                <div className="maui-loader">
+                  <div className="maui-loader-ring"></div>
+                  <div className="maui-loader-ring"></div>
+                  <div className="maui-loader-ring"></div>
+                  <div className="maui-loader-ring"></div>
+                </div>
+                <p className="loader-text">Loading products...</p>
               </div>
             </div>
           </section>
@@ -128,7 +135,11 @@ function Home() {
               <div className="products-grid">
                 {products.map((product) => (
                   <div key={product.id} className="product-card">
-                    <div className="product-image-wrapper">
+                    <div
+                      className="product-image-wrapper"
+                      onClick={() => navigate(`/product/${product.id}`)}
+                      style={{ cursor: "pointer" }}
+                    >
                       <img
                         src={getImageUrl(product.image)}
                         alt={product.name}
@@ -141,7 +152,10 @@ function Home() {
                       <div className="product-overlay">
                         <button
                           className="quick-view-btn"
-                          onClick={() => alert(`Viewing ${product.name}`)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/product/${product.id}`);
+                          }}
                         >
                           Quick View
                         </button>
