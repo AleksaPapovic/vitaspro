@@ -261,8 +261,9 @@ function Home() {
             </div>
             <div className="footer-section">
               <h4>Kontakt</h4>
-              <p>Email: info@vitaspro.com</p>
-              <p>Phone: +1 (555) 123-4567</p>
+              <p>Email: vitascosmetics@gmail.com</p>
+              <p>Phone Serbia: +381 63 755-42-88</p>
+              <p>Phone Montenegro: +382 68 904 560</p>
             </div>
           </div>
           <div className="footer-bottom">

@@ -120,10 +120,6 @@ export const categories = {
       },
     },
   },
-  CRNA_GORA: {
-    name: "CRNA GORA",
-    subcategories: [],
-  },
 };
 
 // Helper funkcija za dobijanje svih kategorija kao niza

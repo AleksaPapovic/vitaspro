@@ -36,9 +36,9 @@ function Obuke() {
       <main className="obuke-main">
         <section className="obuke-hero">
           <div className="container">
-            <h1 className="obuke-title">Obuke</h1>
+            <h1 className="obuke-title">Obuke i Edukacije</h1>
             <p className="obuke-subtitle">
-              Profesionalne obuke za vaš tim
+              Profesionalne obuke i edukativni programi za vaš tim
             </p>
           </div>
         </section>
@@ -61,10 +61,34 @@ function Obuke() {
                   koristi naše proizvode na najbolji mogući način, što će
                   poboljšati kvalitet usluga vašeg salona.
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="obuke-offer" style={{ background: "black", color: "white", padding: "5rem 0" }}>
+          <div className="container">
+            <div className="offer-content">
+              <h2 className="offer-title" style={{ color: "#d4af37", borderBottomColor: "#d4af37" }}>
+                Edukativni programi za profesionalce
+              </h2>
+              <div className="offer-description">
+                <p>
+                  U Vitas Pro verujemo u kontinuirano obrazovanje. Naši
+                  edukativni programi su dizajnirani za profesionalce koji žele
+                  da prošire svoje znanje i veštine u oblasti kozmetike i
+                  frizerstva.
+                </p>
+                <p>
+                  Naši edukativni programi uključuju teorijsku i praktičnu
+                  nastavu, rad sa najnovijim tehnologijama i proizvodima, i
+                  pristup ekspertima iz industrije. Pomažemo vam da ostanete u
+                  koraku sa najnovijim trendovima i tehnikama.
+                </p>
                 <p>
                   Kontaktirajte nas danas i saznajte više o našim programima
-                  obuke. Naš tim će vam pomoći da pronađete najbolje rešenje za
-                  vaš salon.
+                  obuke i edukacije. Naš tim će vam pomoći da pronađete najbolje
+                  rešenje za vaš salon.
                 </p>
               </div>
             </div>
@@ -133,7 +157,7 @@ function Obuke() {
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Opišite vaše potrebe za obukom..."
+                    placeholder="Opišite vaše potrebe za obukom i edukacijom..."
                     rows="6"
                     required
                   />
@@ -169,9 +193,6 @@ function Obuke() {
                 </li>
                 <li>
                   <a href="/obuke">Obuke</a>
-                </li>
-                <li>
-                  <a href="/edukacije">Edukacije</a>
                 </li>
                 <li>
                   <a href="/partnership">Partnerstvo</a>
