@@ -320,9 +320,9 @@ function Navbar({ cartCount = 0 }) {
                   Partnerstvo
                 </a>
                 <a
-                  href={isHomePage ? "#products" : "/#products"}
+                  href="/crnagora"
                   onClick={(e) => {
-                    handleNavClick(e, isHomePage ? "#products" : "/#products");
+                    handleNavClick(e, "/crnagora");
                     setShowMobileMenu(false);
                   }}
                 >

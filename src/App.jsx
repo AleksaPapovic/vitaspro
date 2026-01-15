@@ -4,6 +4,7 @@ import Admin from './pages/Admin'
 import ProductDetail from './pages/ProductDetail'
 import Partnership from './pages/Partnership'
 import Obuke from './pages/Obuke'
+import CrnaGora from './pages/CrnaGora'
 import './App.css'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/partnership" element={<Partnership />} />
         <Route path="/obuke" element={<Obuke />} />
+        <Route path="/crnagora" element={<CrnaGora />} />
       </Routes>
   )
 }
