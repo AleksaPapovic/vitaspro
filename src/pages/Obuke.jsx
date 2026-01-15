@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
-import "./Partnership.css";
+import "./Obuke.css";
 
-function Partnership() {
+function Obuke() {
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     phone: "",
     message: "",
@@ -12,12 +13,11 @@ function Partnership() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you can add logic to send the form data
-    console.log("Partnership form submitted:", formData);
+    console.log("Obuke form submitted:", formData);
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
-      setFormData({ email: "", phone: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", message: "" });
     }, 3000);
     alert("Hvala vam! Vaša poruka je poslata. Kontaktiraćemo vas uskoro.");
   };
@@ -30,49 +30,48 @@ function Partnership() {
   };
 
   return (
-    <div className="partnership-page">
+    <div className="obuke-page">
       <Navbar />
 
-      <main className="partnership-main">
-        <section className="partnership-hero">
+      <main className="obuke-main">
+        <section className="obuke-hero">
           <div className="container">
-            <h1 className="partnership-title">Partnerstvo</h1>
-            <p className="partnership-subtitle">
-              Postanite naš partner i proširite svoj posao
+            <h1 className="obuke-title">Obuke</h1>
+            <p className="obuke-subtitle">
+              Profesionalne obuke za vaš tim
             </p>
           </div>
         </section>
 
-        <section className="partnership-offer">
+        <section className="obuke-offer">
           <div className="container">
             <div className="offer-content">
               <h2 className="offer-title">
-                Posebna ponuda za kozmetičke i frizerske salone
+                Stručne obuke za kozmetičke i frizerske salone
               </h2>
               <div className="offer-description">
-                <p>Vitas Pro misli na svoje salone.</p>
                 <p>
-                  Kroz kontinuiranu saradnju nudimo posebne pogodnosti i uslove
-                  koji unapređuju znanje i kvalitet rada u vašem salonu. Pored
-                  obuka, seminara i edukacija, pružamo start-up pakete i
-                  specijalizovane asortimane za salone sa dugogodišnjim
-                  iskustvom, kao i one koji žele da napreduju.
+                  U Vitas Pro nudimo profesionalne obuke za vaš tim. Naše obuke
+                  su dizajnirane da pruže praktično znanje i veštine potrebne za
+                  uspešan rad u kozmetičkim i frizerskim salonima.
                 </p>
                 <p>
-                  Za svakog klijenta obezbeđujemo ne samo proizvode, već i
-                  stručnu podršku. Uz pravi izbor i stečeno znanje, zajedno
-                  rastemo.
+                  Naše obuke uključuju rad sa najnovijim proizvodima, tehnike
+                  primene, i najbolje prakse u industriji. Obučavamo vaš tim da
+                  koristi naše proizvode na najbolji mogući način, što će
+                  poboljšati kvalitet usluga vašeg salona.
                 </p>
-                <p>Kontaktirajte nas – Vaš Vitas Pro.</p>
                 <p>
-                  <strong>Kontakt: 063/755-42-88</strong>
+                  Kontaktirajte nas danas i saznajte više o našim programima
+                  obuke. Naš tim će vam pomoći da pronađete najbolje rešenje za
+                  vaš salon.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="partnership-form-section">
+        <section className="obuke-form-section">
           <div className="container">
             <div className="form-container">
               <h2 className="form-title">Kontaktirajte nas</h2>
@@ -87,7 +86,20 @@ function Partnership() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="partnership-form">
+              <form onSubmit={handleSubmit} className="obuke-form">
+                <div className="form-group">
+                  <label htmlFor="name">Ime i prezime *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Vaše ime i prezime"
+                    required
+                  />
+                </div>
+
                 <div className="form-group">
                   <label htmlFor="email">Email adresa *</label>
                   <input
@@ -121,7 +133,7 @@ function Partnership() {
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Opišite vaš salon i vaše potrebe..."
+                    placeholder="Opišite vaše potrebe za obukom..."
                     rows="6"
                     required
                   />
@@ -156,6 +168,12 @@ function Partnership() {
                   <a href="/#about">O nama</a>
                 </li>
                 <li>
+                  <a href="/obuke">Obuke</a>
+                </li>
+                <li>
+                  <a href="/edukacije">Edukacije</a>
+                </li>
+                <li>
                   <a href="/partnership">Partnerstvo</a>
                 </li>
               </ul>
@@ -163,7 +181,7 @@ function Partnership() {
             <div className="footer-section">
               <h4>Kontakt</h4>
               <p>Email: info@vitaspro.com</p>
-              <p>Phone: 063/755-42-88</p>
+              <p>Phone: +1 (555) 123-4567</p>
             </div>
           </div>
           <div className="footer-bottom">
@@ -175,4 +193,4 @@ function Partnership() {
   );
 }
 
-export default Partnership;
+export default Obuke;

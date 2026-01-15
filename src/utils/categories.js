@@ -4,11 +4,11 @@ export const categories = {
     name: "KOSA",
     subcategories: [
       "Električni aparati za stilizovanje kose",
-      "Profesionalne četke i češljevi",
-      "Salonski pribor za rad",
       "Trajne farbe za kosu",
-      "Toneri i color maske za kosu",
+      "Salonski pribor za rad",
       "Hidrogen i blanš",
+      "Profesionalne četke i češljevi",
+      "Toneri i color maske za kosu",
       "Nadogradnja prirodne kose",
       "Pribor za nadogradnju kose",
       "Nega i stilizovanje kose",
@@ -120,6 +120,10 @@ export const categories = {
       },
     },
   },
+  CRNA_GORA: {
+    name: "CRNA GORA",
+    subcategories: [],
+  },
 };
 
 // Helper funkcija za dobijanje svih kategorija kao niza
@@ -127,7 +131,10 @@ export const getCategoriesList = () => {
   return Object.values(categories).map((cat) => ({
     id: cat.name,
     name: cat.name,
-    hasSubgroups: !!cat.subcategories?.NEGA_LICA || !!cat.subcategories?.ZA_FRIZERE || !!cat.subcategories?.ZA_MASAZU,
+    hasSubgroups:
+      !!cat.subcategories?.NEGA_LICA ||
+      !!cat.subcategories?.ZA_FRIZERE ||
+      !!cat.subcategories?.ZA_MASAZU,
   }));
 };
 
@@ -140,7 +147,11 @@ export const getSubcategories = (categoryName) => {
   if (!category) return [];
 
   // Ako ima podgrupe (kao PREPARATI ZA LICE I TELO, OPREMA ZA SALONE ili MASAŽA)
-  if (category.subcategories?.NEGA_LICA || category.subcategories?.ZA_FRIZERE || category.subcategories?.ZA_MASAZU) {
+  if (
+    category.subcategories?.NEGA_LICA ||
+    category.subcategories?.ZA_FRIZERE ||
+    category.subcategories?.ZA_MASAZU
+  ) {
     return category.subcategories;
   }
 

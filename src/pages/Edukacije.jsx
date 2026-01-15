@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
-import "./Partnership.css";
+import "./Edukacije.css";
 
-function Partnership() {
+function Edukacije() {
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     phone: "",
     message: "",
@@ -12,12 +13,11 @@ function Partnership() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you can add logic to send the form data
-    console.log("Partnership form submitted:", formData);
+    console.log("Edukacije form submitted:", formData);
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
-      setFormData({ email: "", phone: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", message: "" });
     }, 3000);
     alert("Hvala vam! Vaša poruka je poslata. Kontaktiraćemo vas uskoro.");
   };
@@ -30,49 +30,49 @@ function Partnership() {
   };
 
   return (
-    <div className="partnership-page">
+    <div className="edukacije-page">
       <Navbar />
 
-      <main className="partnership-main">
-        <section className="partnership-hero">
+      <main className="edukacije-main">
+        <section className="edukacije-hero">
           <div className="container">
-            <h1 className="partnership-title">Partnerstvo</h1>
-            <p className="partnership-subtitle">
-              Postanite naš partner i proširite svoj posao
+            <h1 className="edukacije-title">Edukacije</h1>
+            <p className="edukacije-subtitle">
+              Napredni edukativni programi
             </p>
           </div>
         </section>
 
-        <section className="partnership-offer">
+        <section className="edukacije-offer">
           <div className="container">
             <div className="offer-content">
               <h2 className="offer-title">
-                Posebna ponuda za kozmetičke i frizerske salone
+                Edukativni programi za profesionalce
               </h2>
               <div className="offer-description">
-                <p>Vitas Pro misli na svoje salone.</p>
                 <p>
-                  Kroz kontinuiranu saradnju nudimo posebne pogodnosti i uslove
-                  koji unapređuju znanje i kvalitet rada u vašem salonu. Pored
-                  obuka, seminara i edukacija, pružamo start-up pakete i
-                  specijalizovane asortimane za salone sa dugogodišnjim
-                  iskustvom, kao i one koji žele da napreduju.
+                  U Vitas Pro verujemo u kontinuirano obrazovanje. Naši
+                  edukativni programi su dizajnirani za profesionalce koji žele
+                  da prošire svoje znanje i veštine u oblasti kozmetike i
+                  frizerstva.
                 </p>
                 <p>
-                  Za svakog klijenta obezbeđujemo ne samo proizvode, već i
-                  stručnu podršku. Uz pravi izbor i stečeno znanje, zajedno
-                  rastemo.
+                  Naši edukativni programi uključuju teorijsku i praktičnu
+                  nastavu, rad sa najnovijim tehnologijama i proizvodima, i
+                  pristup ekspertima iz industrije. Pomažemo vam da ostanete u
+                  koraku sa najnovijim trendovima i tehnikama.
                 </p>
-                <p>Kontaktirajte nas – Vaš Vitas Pro.</p>
                 <p>
-                  <strong>Kontakt: 063/755-42-88</strong>
+                  Kontaktirajte nas danas i saznajte više o našim edukativnim
+                  programima. Naš tim će vam pomoći da pronađete program koji
+                  najbolje odgovara vašim potrebama.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="partnership-form-section">
+        <section className="edukacije-form-section">
           <div className="container">
             <div className="form-container">
               <h2 className="form-title">Kontaktirajte nas</h2>
@@ -87,7 +87,20 @@ function Partnership() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="partnership-form">
+              <form onSubmit={handleSubmit} className="edukacije-form">
+                <div className="form-group">
+                  <label htmlFor="name">Ime i prezime *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Vaše ime i prezime"
+                    required
+                  />
+                </div>
+
                 <div className="form-group">
                   <label htmlFor="email">Email adresa *</label>
                   <input
@@ -121,7 +134,7 @@ function Partnership() {
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Opišite vaš salon i vaše potrebe..."
+                    placeholder="Opišite vaše potrebe za edukacijom..."
                     rows="6"
                     required
                   />
@@ -156,6 +169,12 @@ function Partnership() {
                   <a href="/#about">O nama</a>
                 </li>
                 <li>
+                  <a href="/obuke">Obuke</a>
+                </li>
+                <li>
+                  <a href="/edukacije">Edukacije</a>
+                </li>
+                <li>
                   <a href="/partnership">Partnerstvo</a>
                 </li>
               </ul>
@@ -163,7 +182,7 @@ function Partnership() {
             <div className="footer-section">
               <h4>Kontakt</h4>
               <p>Email: info@vitaspro.com</p>
-              <p>Phone: 063/755-42-88</p>
+              <p>Phone: +1 (555) 123-4567</p>
             </div>
           </div>
           <div className="footer-bottom">
@@ -175,4 +194,4 @@ function Partnership() {
   );
 }
 
-export default Partnership;
+export default Edukacije;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getProducts, saveProduct, deleteProduct } from "../utils/storage";
 import { getGoogleDriveImageUrl } from "../utils/imageHelper";
+import Navbar from "../components/Navbar";
 import "./Admin.css";
 
 function Admin() {
@@ -253,6 +254,7 @@ function Admin() {
 
   return (
     <div className="admin">
+      <Navbar />
       <div className="admin-container">
         <header className="admin-header">
           <h1>Vitas Pro Admin</h1>
@@ -389,7 +391,7 @@ function Admin() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="price">Cena ($) *</label>
+                <label htmlFor="price">Cena (RSD) *</label>
                 <input
                   type="number"
                   id="price"
@@ -514,7 +516,7 @@ function Admin() {
                     />
                     <div className="admin-product-info">
                       <h3>{product.name}</h3>
-                      <p className="admin-product-price">${product.price}</p>
+                      <p className="admin-product-price">{product.price} RSD</p>
                       {product.description && (
                         <p className="admin-product-desc">
                           {product.description}

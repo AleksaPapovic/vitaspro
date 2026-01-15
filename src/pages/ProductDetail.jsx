@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getProducts } from '../utils/storage'
 import { getGoogleDriveImageUrl } from '../utils/imageHelper'
+import Navbar from '../components/Navbar'
 import './ProductDetail.css'
 
 function ProductDetail() {
@@ -70,6 +71,7 @@ function ProductDetail() {
   if (loading) {
     return (
       <div className="product-detail-page">
+        <Navbar />
         <div className="loader-container">
           <div className="maui-loader">
             <div className="maui-loader-ring"></div>
@@ -86,6 +88,7 @@ function ProductDetail() {
   if (!product) {
     return (
       <div className="product-detail-page">
+        <Navbar />
         <div className="container">
           <div className="product-not-found">
             <h2>Proizvod nije pronađen</h2>
@@ -103,6 +106,7 @@ function ProductDetail() {
 
   return (
     <div className="product-detail-page">
+      <Navbar />
       <div className="container">
         <button onClick={() => navigate(-1)} className="back-button">
           ← Nazad
@@ -160,7 +164,7 @@ function ProductDetail() {
 
             <div className="product-detail-price">
               <span className="price-label">Cena:</span>
-              <span className="price-value">${product.price}</span>
+              <span className="price-value">{product.price} RSD</span>
             </div>
 
             <div className="product-detail-actions">
