@@ -7,8 +7,8 @@ function Navbar({ cartCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [showCategoriesMenu, setShowCategoriesMenu] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState({});
 
   const isHomePage = location.pathname === "/";
 
@@ -96,7 +96,6 @@ function Navbar({ cartCount = 0 }) {
 
                           if (!isHoveringWrapper && !isHoveringDropdown) {
                             setShowCategoriesMenu(false);
-                            setSelectedCategory(null);
                           }
                         }, 200);
                       }
@@ -146,7 +145,6 @@ function Navbar({ cartCount = 0 }) {
                                 !e.currentTarget.matches(":hover")
                               ) {
                                 setShowCategoriesMenu(false);
-                                setSelectedCategory(null);
                               }
                             }, 150);
                           }
@@ -154,69 +152,117 @@ function Navbar({ cartCount = 0 }) {
                       }}
                     >
                       <div className="categories-panel">
-                        <div className="categories-sidebar">
-                          {getCategoriesList().map((category, index) => (
-                            <div
-                              key={category.id}
-                              className={`category-sidebar-item ${
-                                selectedCategory === category.id ||
-                                (!selectedCategory && index === 0)
-                                  ? "active"
-                                  : ""
-                              }`}
-                              onMouseEnter={() =>
-                                setSelectedCategory(category.id)
-                              }
-                            >
-                              <span className="category-sidebar-name">
-                                {category.name}
-                              </span>
-                              <span className="category-arrow">→</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="subcategories-panel">
-                          {(() => {
-                            const categoryName =
-                              selectedCategory || getCategoriesList()[0]?.id;
-                            const subcats = getSubcategories(categoryName);
+                        {getCategoriesList().map((category) => {
+                          const subcats = getSubcategories(category.id);
+                          const isExpanded =
+                            expandedCategories[category.id] || false;
 
-                            if (
-                              !subcats ||
-                              (Array.isArray(subcats) && subcats.length === 0)
-                            ) {
-                              return (
-                                <div className="subcategories-content">
-                                  <div className="subcategories-placeholder">
-                                    Proizvodi uskoro...
-                                  </div>
-                                </div>
-                              );
-                            }
+                          return (
+                            <div key={category.id} className="category-item">
+                              <div
+                                className="category-header"
+                                onClick={() => {
+                                  setExpandedCategories((prev) => ({
+                                    ...prev,
+                                    [category.id]: !prev[category.id],
+                                  }));
+                                }}
+                              >
+                                <span className="category-name">
+                                  {category.name}
+                                </span>
+                                <span className="category-arrow">
+                                  {isExpanded ? "▲" : "▼"}
+                                </span>
+                              </div>
+                              {isExpanded && (
+                                <div className="subcategories-container">
+                                  {(() => {
+                                    if (
+                                      !subcats ||
+                                      (Array.isArray(subcats) &&
+                                        subcats.length === 0)
+                                    ) {
+                                      return (
+                                        <div className="subcategories-empty">
+                                          Proizvodi uskoro...
+                                        </div>
+                                      );
+                                    }
 
-                            // Ako ima podgrupe (kao PREPARATI ZA LICE I TELO, OPREMA ZA SALONE ili MASAŽA)
-                            if (
-                              subcats.NEGA_LICA ||
-                              subcats.ZA_FRIZERE ||
-                              subcats.ZA_MASAZU
-                            ) {
-                              return (
-                                <div className="subcategories-content">
-                                  {Object.values(subcats).map((subgroup) => (
-                                    <div
-                                      key={subgroup.name}
-                                      className="subgroup-section"
-                                    >
-                                      <h3 className="subgroup-title">
-                                        {subgroup.name}
-                                      </h3>
-                                      {subgroup.items &&
-                                      Array.isArray(subgroup.items) &&
-                                      subgroup.items.length > 0 ? (
-                                        <div className="subgroup-items-grid">
-                                          {subgroup.items.map((item) => (
+                                    // Ako ima podgrupe
+                                    if (
+                                      subcats.NEGA_LICA ||
+                                      subcats.ZA_FRIZERE ||
+                                      subcats.ZA_MASAZU
+                                    ) {
+                                      return (
+                                        <div className="subcategories-content">
+                                          {Object.values(subcats).map(
+                                            (subgroup) => (
+                                              <div
+                                                key={subgroup.name}
+                                                className="subgroup-section"
+                                              >
+                                                <h3 className="subgroup-title">
+                                                  {subgroup.name}
+                                                </h3>
+                                                {subgroup.items &&
+                                                Array.isArray(subgroup.items) &&
+                                                subgroup.items.length > 0 ? (
+                                                  <div className="subgroup-items-grid">
+                                                    {subgroup.items.map(
+                                                      (item) => (
+                                                        <a
+                                                          key={item}
+                                                          href={
+                                                            isHomePage
+                                                              ? "#products"
+                                                              : "/#products"
+                                                          }
+                                                          className="subcategory-item"
+                                                          onClick={(e) => {
+                                                            e.preventDefault();
+                                                            if (!isHomePage) {
+                                                              navigate(
+                                                                "/#products"
+                                                              );
+                                                            }
+                                                            setShowCategoriesMenu(
+                                                              false
+                                                            );
+                                                            setShowMobileMenu(
+                                                              false
+                                                            );
+                                                          }}
+                                                        >
+                                                          {item}
+                                                        </a>
+                                                      )
+                                                    )}
+                                                  </div>
+                                                ) : (
+                                                  <p className="subgroup-empty">
+                                                    Proizvodi uskoro...
+                                                  </p>
+                                                )}
+                                              </div>
+                                            )
+                                          )}
+                                        </div>
+                                      );
+                                    }
+
+                                    // Ako su podkategorije običan niz
+                                    if (
+                                      Array.isArray(subcats) &&
+                                      subcats.length > 0
+                                    ) {
+                                      return (
+                                        <div className="subcategories-grid">
+                                          {subcats.map((subcat) => (
                                             <a
-                                              key={item}
+                                              key={subcat}
                                               href={
                                                 isHomePage
                                                   ? "#products"
@@ -232,61 +278,24 @@ function Navbar({ cartCount = 0 }) {
                                                 setShowMobileMenu(false);
                                               }}
                                             >
-                                              {item}
+                                              {subcat}
                                             </a>
                                           ))}
                                         </div>
-                                      ) : (
-                                        <p className="subgroup-empty">
-                                          Proizvodi uskoro...
-                                        </p>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            }
+                                      );
+                                    }
 
-                            // Ako su podkategorije običan niz
-                            if (Array.isArray(subcats) && subcats.length > 0) {
-                              return (
-                                <div className="subcategories-content">
-                                  <div className="subcategories-grid">
-                                    {subcats.map((subcat) => (
-                                      <a
-                                        key={subcat}
-                                        href={
-                                          isHomePage
-                                            ? "#products"
-                                            : "/#products"
-                                        }
-                                        className="subcategory-item"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          if (!isHomePage) {
-                                            navigate("/#products");
-                                          }
-                                          setShowCategoriesMenu(false);
-                                          setShowMobileMenu(false);
-                                        }}
-                                      >
-                                        {subcat}
-                                      </a>
-                                    ))}
-                                  </div>
+                                    return (
+                                      <div className="subcategories-empty">
+                                        Proizvodi uskoro...
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
-                              );
-                            }
-
-                            return (
-                              <div className="subcategories-content">
-                                <div className="subcategories-placeholder">
-                                  Proizvodi uskoro...
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
