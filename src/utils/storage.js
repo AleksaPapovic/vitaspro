@@ -7,120 +7,215 @@ function extractFileId(fileUrl) {
   return match && match[1] ? match[1] : "1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv";
 }
 
+// Fetch with timeout helper
+async function fetchWithTimeout(url, options = {}, timeout = 30000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error(`Request timeout after ${timeout}ms`);
+    }
+    throw error;
+  }
+}
+
+// Default Google Apps Script URL for reading products (fallback if user hasn't configured)
+const DEFAULT_PRODUCTS_JSON_UPDATE_URL =
+  "https://script.google.com/macros/s/AKfycbwsX-Boeoh6NV7RRvPmDnYY1WT57mlcPALXYZjZxV-sT5ZtTDmFn9OrSLYB00qs_IoK/exec";
+
 // Read products directly from Google Drive - no cache, always fresh
 export const getProducts = async (forceRefresh = false) => {
   // First try to get from Apps Script if configured
   const driveConfig = localStorage.getItem("vitaspro_drive_config");
+  let appsScriptUrl = null;
+
   if (driveConfig) {
     try {
       const config = JSON.parse(driveConfig);
       // Try to use productsJsonUpdateUrl or appsScriptUrl for reading
-      const appsScriptUrl =
-        config.productsJsonUpdateUrl || config.appsScriptUrl;
-      if (appsScriptUrl && appsScriptUrl.trim() !== "") {
-        try {
-          const fileId = extractFileId(config.fileUrl || "");
-          const cacheBuster = forceRefresh ? `&t=${Date.now()}` : "";
-          let url = appsScriptUrl.trim();
-          if (!url.endsWith("/exec") && !url.endsWith("/exec/")) {
-            url = url.replace(/\/$/, "") + "/exec";
-          }
-          url += `?fileId=${fileId}${cacheBuster}`;
+      appsScriptUrl = config.productsJsonUpdateUrl || config.appsScriptUrl;
+    } catch (configError) {
+      console.warn("Failed to parse drive config:", configError);
+    }
+  }
 
+  // Use default URL if no configuration or empty URL
+  if (!appsScriptUrl || appsScriptUrl.trim() === "") {
+    appsScriptUrl = DEFAULT_PRODUCTS_JSON_UPDATE_URL;
+    console.log(
+      "Using default Google Apps Script URL for products:",
+      appsScriptUrl
+    );
+  }
+
+  if (appsScriptUrl && appsScriptUrl.trim() !== "") {
+    // Retry logic for timeout errors
+    const maxRetries = 2;
+
+    // Get fileId from config if available, otherwise use default
+    let fileId = "1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv"; // Default
+    if (driveConfig) {
+      try {
+        const config = JSON.parse(driveConfig);
+        if (config.fileUrl) {
+          fileId = extractFileId(config.fileUrl);
+        }
+      } catch {
+        // Use default fileId if config parsing fails
+      }
+    }
+
+    for (let retry = 0; retry <= maxRetries; retry++) {
+      try {
+        const cacheBuster = forceRefresh ? `&t=${Date.now()}` : "";
+        let url = appsScriptUrl.trim();
+        if (!url.endsWith("/exec") && !url.endsWith("/exec/")) {
+          url = url.replace(/\/$/, "") + "/exec";
+        }
+        url += `?fileId=${fileId}${cacheBuster}`;
+
+        if (retry > 0) {
+          console.log(
+            `Retry attempt ${retry} to get products from Apps Script...`
+          );
+          // Wait before retry
+          await new Promise((resolve) => setTimeout(resolve, 1000 * retry));
+        } else {
           console.log("Trying to get products from Apps Script:", url);
-          const response = await fetch(url, {
+        }
+
+        const response = await fetchWithTimeout(
+          url,
+          {
             method: "GET",
             mode: "cors",
-          });
+          },
+          30000 // 30 second timeout
+        );
 
-          if (response.ok) {
-            const text = await response.text();
-            console.log("Apps Script response:", text.substring(0, 200));
+        if (response.ok) {
+          const text = await response.text();
+          console.log("Apps Script response:", text.substring(0, 200));
 
-            // Try to parse JSON
-            let products;
-            try {
-              const trimmed = text.trim();
-              console.log(
-                "Raw response from Apps Script:",
-                trimmed.substring(0, 500)
-              );
+          // Try to parse JSON
+          let products;
+          try {
+            const trimmed = text.trim();
+            console.log(
+              "Raw response from Apps Script:",
+              trimmed.substring(0, 500)
+            );
 
-              // Handle different response formats
-              let jsonString = trimmed;
+            // Handle different response formats
+            let jsonString = trimmed;
 
-              // If response is a JSON string (wrapped in quotes), unescape it
-              if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
-                try {
-                  jsonString = JSON.parse(trimmed); // This will unescape the string
-                } catch (e) {
-                  // If parsing fails, try to extract the inner JSON
-                  jsonString = trimmed
-                    .slice(1, -1)
-                    .replace(/\\"/g, '"')
-                    .replace(/\\\\/g, "\\");
-                }
+            // If response is a JSON string (wrapped in quotes), unescape it
+            if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+              try {
+                jsonString = JSON.parse(trimmed); // This will unescape the string
+              } catch {
+                // If parsing fails, try to extract the inner JSON
+                jsonString = trimmed
+                  .slice(1, -1)
+                  .replace(/\\"/g, '"')
+                  .replace(/\\\\/g, "\\");
               }
-
-              // Now parse the actual JSON
-              if (typeof jsonString === "string") {
-                // Try direct parse first
-                if (
-                  jsonString.trim().startsWith("[") ||
-                  jsonString.trim().startsWith("{")
-                ) {
-                  products = JSON.parse(jsonString);
-                } else {
-                  // Try to extract JSON from text
-                  const jsonMatch = jsonString.match(/(\[[\s\S]*\]|{[\s\S]*})/);
-                  if (jsonMatch) {
-                    products = JSON.parse(jsonMatch[1]);
-                  } else {
-                    throw new Error("No JSON array found in response");
-                  }
-                }
-              } else {
-                products = jsonString;
-              }
-
-              // Final check - if still a string, parse again
-              if (typeof products === "string") {
-                products = JSON.parse(products);
-              }
-
-              if (Array.isArray(products)) {
-                console.log(
-                  `✅ Success! Products loaded from Apps Script:`,
-                  products.length
-                );
-                console.log("First product:", products[0]);
-                return products;
-              } else {
-                console.warn(
-                  "Apps Script response is not an array:",
-                  typeof products
-                );
-              }
-            } catch (parseError) {
-              console.error(
-                "Failed to parse Apps Script response:",
-                parseError
-              );
-              console.error("Response text:", text.substring(0, 500));
-              // Fall through to try direct Google Drive access
             }
+
+            // Now parse the actual JSON
+            if (typeof jsonString === "string") {
+              // Try direct parse first
+              if (
+                jsonString.trim().startsWith("[") ||
+                jsonString.trim().startsWith("{")
+              ) {
+                products = JSON.parse(jsonString);
+              } else {
+                // Try to extract JSON from text
+                const jsonMatch = jsonString.match(/(\[[\s\S]*\]|{[\s\S]*})/);
+                if (jsonMatch) {
+                  products = JSON.parse(jsonMatch[1]);
+                } else {
+                  throw new Error("No JSON array found in response");
+                }
+              }
+            } else {
+              products = jsonString;
+            }
+
+            // Final check - if still a string, parse again
+            if (typeof products === "string") {
+              products = JSON.parse(products);
+            }
+
+            if (Array.isArray(products)) {
+              console.log(
+                `✅ Success! Products loaded from Apps Script:`,
+                products.length
+              );
+              console.log("First product:", products[0]);
+              return products;
+            } else {
+              console.warn(
+                "Apps Script response is not an array:",
+                typeof products
+              );
+              // Break retry loop if response is not an array
+              break;
+            }
+          } catch (parseError) {
+            console.error("Failed to parse Apps Script response:", parseError);
+            console.error("Response text:", text.substring(0, 500));
+            // Break retry loop on parse error
+            break;
           }
-        } catch (appsScriptError) {
+        } else {
+          // Response not OK - check if it's a timeout/408 error
+          if (response.status === 408 || response.status === 504) {
+            if (retry < maxRetries) {
+              console.warn(`Request timeout (${response.status}), retrying...`);
+              continue; // Retry
+            } else {
+              throw new Error(
+                `Request timeout after ${maxRetries + 1} attempts`
+              );
+            }
+          } else {
+            // Other error, break retry loop
+            break;
+          }
+        }
+      } catch (appsScriptError) {
+        const isTimeout =
+          appsScriptError.message &&
+          (appsScriptError.message.includes("timeout") ||
+            appsScriptError.message.includes("408") ||
+            appsScriptError.message.includes("Request timeout"));
+
+        if (isTimeout && retry < maxRetries) {
+          console.warn(
+            `Apps Script request timeout (attempt ${retry + 1}), retrying...`,
+            appsScriptError.message
+          );
+          continue; // Retry on timeout
+        } else {
           console.warn(
             "Failed to get products from Apps Script:",
             appsScriptError
           );
           // Fall through to try direct Google Drive access
+          break;
         }
       }
-    } catch (configError) {
-      console.warn("Failed to parse drive config:", configError);
-      // Fall through to try direct Google Drive access
     }
   }
 
@@ -161,10 +256,14 @@ export const getProducts = async (forceRefresh = false) => {
       console.log(`Trying method ${i + 1}:`, urls[i]);
       let response;
       try {
-        response = await fetch(urls[i], {
-          mode: "cors",
-          credentials: "omit",
-        });
+        response = await fetchWithTimeout(
+          urls[i],
+          {
+            mode: "cors",
+            credentials: "omit",
+          },
+          30000 // 30 second timeout
+        );
       } catch (corsError) {
         if (
           corsError.message.includes("CORS") ||
@@ -218,7 +317,11 @@ export const getProducts = async (forceRefresh = false) => {
             `Found download link in HTML, trying: ${downloadLinkMatch[1]}`
           );
           try {
-            const directResponse = await fetch(downloadLinkMatch[1]);
+            const directResponse = await fetchWithTimeout(
+              downloadLinkMatch[1],
+              {},
+              30000 // 30 second timeout
+            );
             const directText = await directResponse.text();
             if (
               directText.trim().startsWith("[") ||

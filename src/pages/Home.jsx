@@ -14,6 +14,7 @@ function Home() {
   const { toasts, showToast, removeToast } = useToast();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [cartCount, setCartCount] = useState(() => {
     const cart = JSON.parse(localStorage.getItem("vitaspro_cart") || "[]");
@@ -24,13 +25,46 @@ function Home() {
     // Load products from Google Drive JSON file
     const loadProducts = async () => {
       setLoading(true);
+      setError(null);
       try {
         console.log("Loading products from Google Drive...");
         const loadedProducts = await getProducts();
-        setProducts(loadedProducts);
         console.log("Products loaded:", loadedProducts.length);
+
+        if (loadedProducts && loadedProducts.length > 0) {
+          setProducts(loadedProducts);
+          setError(null);
+        } else {
+          // Check if there's a drive config to determine if it's a real error
+          const driveConfig = localStorage.getItem("vitaspro_drive_config");
+          if (driveConfig) {
+            setError("Nema proizvoda u JSON fajlu ili fajl je prazan.");
+          } else {
+            setError(
+              "Google Drive konfiguracija nije podešena. Molimo konfigurišite u Admin podešavanjima."
+            );
+          }
+          setProducts([]);
+        }
       } catch (error) {
         console.error("Error loading products:", error);
+        let errorMessage =
+          error.message || "Greška pri učitavanju proizvoda sa Google Drive-a";
+
+        // Check for timeout errors
+        if (
+          errorMessage.includes("timeout") ||
+          errorMessage.includes("408") ||
+          errorMessage.includes("Request Timeout") ||
+          errorMessage.includes("504")
+        ) {
+          errorMessage =
+            "Zahtev je istekao (timeout). Proverite internet konekciju i pokušajte ponovo.";
+        }
+
+        setError(errorMessage);
+        showToast(`Greška: ${errorMessage}`, "error");
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -41,7 +75,7 @@ function Home() {
     // Refresh products every 30 seconds to get updates from Google Drive
     const interval = setInterval(loadProducts, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [showToast]);
 
   // Convert Google Drive share link to direct image link
   const getImageUrl = (url) => {
@@ -119,6 +153,55 @@ function Home() {
                   <div className="maui-loader-ring"></div>
                 </div>
                 <p className="loader-text">Učitavanje proizvoda...</p>
+              </div>
+            </div>
+          </section>
+        ) : error ? (
+          <section id="products" className="products-section">
+            <div className="container">
+              <div className="empty-state">
+                <div className="empty-icon">
+                  <img
+                    src="/vitaspro.jpg"
+                    alt="Vitas Pro"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </div>
+                <h3>Greška pri učitavanju proizvoda</h3>
+                <p style={{ color: "#ff6b6b", marginBottom: "1rem" }}>
+                  {error}
+                </p>
+                <p style={{ color: "#ccc", marginBottom: "1.5rem" }}>
+                  Proverite konzolu za više detalja ili konfigurišite Google
+                  Drive u Admin podešavanjima.
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "1rem",
+                    justifyContent: "center",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <a href="/admin" className="admin-link-button">
+                    Idi na Admin stranicu
+                  </a>
+                  <button
+                    className="admin-link-button"
+                    onClick={() => window.location.reload()}
+                    style={{
+                      background: "rgba(212, 175, 55, 0.2)",
+                      border: "2px solid #d4af37",
+                    }}
+                  >
+                    Pokušaj ponovo
+                  </button>
+                </div>
               </div>
             </div>
           </section>
