@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getProducts, saveProduct, deleteProduct } from "../utils/storage";
 import { getGoogleDriveImageUrl } from "../utils/imageHelper";
+import { getCategoriesList } from "../utils/categories";
 import Navbar from "../components/Navbar";
 import "./Admin.css";
 
@@ -13,6 +14,7 @@ function Admin() {
     image: "",
     images: [], // Array of Google Drive URLs
     description: "",
+    category: "", // Category ID
   });
   const [message, setMessage] = useState("");
   const [driveConfig, setDriveConfig] = useState(() => {
@@ -78,6 +80,7 @@ function Admin() {
         image: "",
         images: [],
         description: "",
+        category: "",
       });
       setMessage("Proizvod je uspešno dodat! Google Drive fajl je ažuriran.");
       setTimeout(() => setMessage(""), 3000);
@@ -404,6 +407,28 @@ function Admin() {
                   min="0"
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="category">Kategorija *</label>
+                <select
+                  id="category"
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  required
+                >
+                  <option value="">Izaberite kategoriju</option>
+                  {getCategoriesList().map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <small className="help-text">
+                  Kategorija proizvoda za organizaciju
+                </small>
               </div>
 
               <div className="form-group">

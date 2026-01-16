@@ -3,12 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { getProducts } from "../utils/storage";
 import { getGoogleDriveImageUrl } from "../utils/imageHelper";
 import Navbar from "../components/Navbar";
+import ToastContainer from "../components/ToastContainer";
+import { useToast } from "../hooks/useToast";
 import "./Home.css";
+
+const PRODUCTS_PER_PAGE = 6;
 
 function Home() {
   const navigate = useNavigate();
+  const { toasts, showToast, removeToast } = useToast();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [cartCount, setCartCount] = useState(() => {
     const cart = JSON.parse(localStorage.getItem("vitaspro_cart") || "[]");
     return cart.length;
@@ -42,18 +48,50 @@ function Home() {
     return getGoogleDriveImageUrl(url);
   };
 
+  // Check if product was added in the last 24 hours
+  const isNewProduct = (product) => {
+    if (!product.createdAt) return false;
+
+    const createdAt = new Date(product.createdAt);
+    const now = new Date();
+    const diffInHours = (now - createdAt) / (1000 * 60 * 60);
+
+    return diffInHours <= 24;
+  };
+
   const addToCart = (product) => {
     const cart = JSON.parse(localStorage.getItem("vitaspro_cart") || "[]");
     cart.push(product);
     localStorage.setItem("vitaspro_cart", JSON.stringify(cart));
     setCartCount(cart.length);
-    // Show notification
-    alert(`${product.name} je dodato u korpu!`);
+    // Show toast notification
+    showToast(`${product.name} je dodato u korpu!`, "success");
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const currentProducts = products.slice(startIndex, endIndex);
+
+  // Reset to page 1 when products change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [products.length]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Scroll to products section when page changes
+    const productsSection = document.getElementById("products");
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   return (
     <div className="home">
       <Navbar cartCount={cartCount} />
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       <main className="main-content">
         {/* Hero Banner */}
@@ -113,12 +151,10 @@ function Home() {
             <div className="container">
               <div className="section-header">
                 <h2 className="section-title">Naši proizvodi</h2>
-                <p className="section-subtitle">
-                  Otkrijte našu premium kolekciju
-                </p>
+                <p className="section-subtitle">Otkrijte premium kolekciju</p>
               </div>
               <div className="products-grid">
-                {products.map((product) => (
+                {currentProducts.map((product) => (
                   <div key={product.id} className="product-card">
                     <div
                       className="product-image-wrapper"
@@ -133,7 +169,9 @@ function Home() {
                           e.target.src = "/vitaspro.jpg";
                         }}
                       />
-                      <div className="product-badge">Novo</div>
+                      {isNewProduct(product) && (
+                        <div className="product-badge">Novo</div>
+                      )}
                       <div className="product-overlay">
                         <button
                           className="quick-view-btn"
@@ -168,6 +206,40 @@ function Home() {
                   </div>
                 ))}
               </div>
+              {/* Pagination */}
+              {products.length > PRODUCTS_PER_PAGE && (
+                <div className="pagination-container">
+                  <div className="pagination">
+                    <button
+                      className="pagination-btn"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ‹
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <button
+                          key={page}
+                          className={`pagination-number ${
+                            currentPage === page ? "active" : ""
+                          }`}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      )
+                    )}
+                    <button
+                      className="pagination-btn"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )}

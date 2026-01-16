@@ -158,16 +158,20 @@ function Partnership() {
                 <li>
                   <a href="/partnership">Partnerstvo</a>
                 </li>
+                <li>
+                  <a href="/admin">Admin</a>
+                </li>
               </ul>
             </div>
             <div className="footer-section">
               <h4>Kontakt</h4>
-              <p>Email: info@vitaspro.com</p>
-              <p>Phone: 063/755-42-88</p>
+              <p>Email: vitascosmetics@gmail.com</p>
+              <p>Phone Serbia: +381 63 755-42-88</p>
+              <p>Phone Montenegro: +382 68 904 560</p>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2024 Vitas Pro. Sva prava zadržana.</p>
+            <p>&copy; 2026 Vitas Pro. Sva prava zadržana.</p>
           </div>
         </div>
       </footer>

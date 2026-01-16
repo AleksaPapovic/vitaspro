@@ -388,11 +388,23 @@
   color: white !important;
 }
 
+.cart-icon-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+}
+
 .cart-icon {
   position: relative;
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
+  transition: transform 0.2s;
+}
+
+.cart-icon:hover {
+  transform: scale(1.1);
 }
 
 .cart-count {
@@ -557,17 +569,13 @@
 
 .product-card {
   background: #1a1a1a;
-  border-radius: 15px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
 }
 
 .product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+  box-shadow: 0px 0px 8px 4px rgba(212, 175, 55, 0.3);
 }
 
 .product-image-wrapper {
@@ -690,6 +698,66 @@
 .add-to-cart-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+}
+
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 3rem;
+  padding: 2rem 0;
+}
+
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.pagination-btn,
+.pagination-number {
+  background: #1a1a1a;
+  color: white;
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-btn:hover:not(:disabled),
+.pagination-number:hover {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.1);
+  transform: translateY(-2px);
+}
+
+.pagination-number.active {
+  background: linear-gradient(135deg, #d4af37 0%, #c9a961 100%);
+  border-color: #d4af37;
+  color: white;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-btn:disabled:hover {
+  transform: none;
+  border-color: rgba(212, 175, 55, 0.3);
+  background: #1a1a1a;
 }
 
 /* About Section */
@@ -1136,6 +1204,18 @@
 
   .products-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pagination {
+    gap: 0.4rem;
+  }
+
+  .pagination-btn,
+  .pagination-number {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    min-width: 40px;
+    height: 40px;
   }
 
   .newsletter-form {

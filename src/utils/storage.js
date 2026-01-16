@@ -1,11 +1,130 @@
 // Product storage utilities - reads from Google Drive JSON file directly
 
-// Direct Google Drive file URL
-const GOOGLE_DRIVE_FILE_URL =
-  "https://drive.google.com/uc?export=download&id=1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv";
+// Helper function to extract file ID from Google Drive URL
+function extractFileId(fileUrl) {
+  if (!fileUrl) return "1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv"; // Default
+  const match = fileUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  return match && match[1] ? match[1] : "1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv";
+}
 
 // Read products directly from Google Drive - no cache, always fresh
 export const getProducts = async (forceRefresh = false) => {
+  // First try to get from Apps Script if configured
+  const driveConfig = localStorage.getItem("vitaspro_drive_config");
+  if (driveConfig) {
+    try {
+      const config = JSON.parse(driveConfig);
+      // Try to use productsJsonUpdateUrl or appsScriptUrl for reading
+      const appsScriptUrl =
+        config.productsJsonUpdateUrl || config.appsScriptUrl;
+      if (appsScriptUrl && appsScriptUrl.trim() !== "") {
+        try {
+          const fileId = extractFileId(config.fileUrl || "");
+          const cacheBuster = forceRefresh ? `&t=${Date.now()}` : "";
+          let url = appsScriptUrl.trim();
+          if (!url.endsWith("/exec") && !url.endsWith("/exec/")) {
+            url = url.replace(/\/$/, "") + "/exec";
+          }
+          url += `?fileId=${fileId}${cacheBuster}`;
+
+          console.log("Trying to get products from Apps Script:", url);
+          const response = await fetch(url, {
+            method: "GET",
+            mode: "cors",
+          });
+
+          if (response.ok) {
+            const text = await response.text();
+            console.log("Apps Script response:", text.substring(0, 200));
+
+            // Try to parse JSON
+            let products;
+            try {
+              const trimmed = text.trim();
+              console.log(
+                "Raw response from Apps Script:",
+                trimmed.substring(0, 500)
+              );
+
+              // Handle different response formats
+              let jsonString = trimmed;
+
+              // If response is a JSON string (wrapped in quotes), unescape it
+              if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+                try {
+                  jsonString = JSON.parse(trimmed); // This will unescape the string
+                } catch (e) {
+                  // If parsing fails, try to extract the inner JSON
+                  jsonString = trimmed
+                    .slice(1, -1)
+                    .replace(/\\"/g, '"')
+                    .replace(/\\\\/g, "\\");
+                }
+              }
+
+              // Now parse the actual JSON
+              if (typeof jsonString === "string") {
+                // Try direct parse first
+                if (
+                  jsonString.trim().startsWith("[") ||
+                  jsonString.trim().startsWith("{")
+                ) {
+                  products = JSON.parse(jsonString);
+                } else {
+                  // Try to extract JSON from text
+                  const jsonMatch = jsonString.match(/(\[[\s\S]*\]|{[\s\S]*})/);
+                  if (jsonMatch) {
+                    products = JSON.parse(jsonMatch[1]);
+                  } else {
+                    throw new Error("No JSON array found in response");
+                  }
+                }
+              } else {
+                products = jsonString;
+              }
+
+              // Final check - if still a string, parse again
+              if (typeof products === "string") {
+                products = JSON.parse(products);
+              }
+
+              if (Array.isArray(products)) {
+                console.log(
+                  `✅ Success! Products loaded from Apps Script:`,
+                  products.length
+                );
+                console.log("First product:", products[0]);
+                return products;
+              } else {
+                console.warn(
+                  "Apps Script response is not an array:",
+                  typeof products
+                );
+              }
+            } catch (parseError) {
+              console.error(
+                "Failed to parse Apps Script response:",
+                parseError
+              );
+              console.error("Response text:", text.substring(0, 500));
+              // Fall through to try direct Google Drive access
+            }
+          }
+        } catch (appsScriptError) {
+          console.warn(
+            "Failed to get products from Apps Script:",
+            appsScriptError
+          );
+          // Fall through to try direct Google Drive access
+        }
+      }
+    } catch (configError) {
+      console.warn("Failed to parse drive config:", configError);
+      // Fall through to try direct Google Drive access
+    }
+  }
+
+  // Fallback to direct Google Drive access
   const fileId = "1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv";
 
   // Add cache-busting parameter to ensure fresh data
@@ -233,9 +352,28 @@ const updateGoogleDriveFile = async (appsScriptUrl, products) => {
   console.log("Apps Script URL:", appsScriptUrl);
   console.log("Products to save:", products.length, "items");
 
+  // Extract fileId from fileUrl if available, or use default
+  let fileId = "1nuTKttBMej3SuIMtO3rJplsCDcJ_chnv"; // Default
+  const driveConfig = localStorage.getItem("vitaspro_drive_config");
+  if (driveConfig) {
+    try {
+      const config = JSON.parse(driveConfig);
+      if (config.fileUrl) {
+        // Extract file ID from Google Drive URL
+        const match = config.fileUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+          fileId = match[1];
+        }
+      }
+    } catch (e) {
+      console.warn("Could not parse drive config for fileId:", e);
+    }
+  }
+
   const requestBody = {
     action: "update",
     data: products,
+    fileId: fileId,
   };
 
   // Ensure URL ends with /exec (required for Google Apps Script Web Apps)
@@ -277,6 +415,7 @@ const updateGoogleDriveFile = async (appsScriptUrl, products) => {
       const formData = new FormData();
       formData.append("action", "update");
       formData.append("data", JSON.stringify(products));
+      formData.append("fileId", fileId);
 
       const response = await fetch(url, {
         method: "POST",
@@ -301,6 +440,7 @@ const updateGoogleDriveFile = async (appsScriptUrl, products) => {
       const params = new URLSearchParams();
       params.append("action", "update");
       params.append("data", JSON.stringify(products));
+      params.append("fileId", fileId);
 
       const response = await fetch(url, {
         method: "POST",
@@ -394,6 +534,7 @@ export const saveProduct = async (product) => {
     image: product.image,
     images: imagesArray.length > 0 ? imagesArray : undefined,
     description: product.description || "",
+    category: product.category || "",
     createdAt: new Date().toISOString(),
   };
   products.push(newProduct);

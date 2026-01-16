@@ -3,15 +3,22 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getProducts } from '../utils/storage'
 import { getGoogleDriveImageUrl } from '../utils/imageHelper'
 import Navbar from '../components/Navbar'
+import ToastContainer from '../components/ToastContainer'
+import { useToast } from '../hooks/useToast'
 import './ProductDetail.css'
 
 function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { toasts, showToast, removeToast } = useToast()
   const [product, setProduct] = useState(null)
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [cartCount, setCartCount] = useState(() => {
+    const cart = JSON.parse(localStorage.getItem("vitaspro_cart") || "[]");
+    return cart.length;
+  });
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -33,6 +40,17 @@ function ProductDetail() {
 
   const getImageUrl = (url) => {
     return getGoogleDriveImageUrl(url)
+  }
+
+  // Check if product was added in the last 24 hours
+  const isNewProduct = (product) => {
+    if (!product || !product.createdAt) return false;
+    
+    const createdAt = new Date(product.createdAt);
+    const now = new Date();
+    const diffInHours = (now - createdAt) / (1000 * 60 * 60);
+    
+    return diffInHours <= 24;
   }
 
   const getProductImages = () => {
@@ -65,7 +83,8 @@ function ProductDetail() {
     const cart = JSON.parse(localStorage.getItem('vitaspro_cart') || '[]')
     cart.push(product)
     localStorage.setItem('vitaspro_cart', JSON.stringify(cart))
-    alert(`${product.name} je dodato u korpu!`)
+    setCartCount(cart.length)
+    showToast(`${product.name} je dodato u korpu!`, 'success')
   }
 
   if (loading) {
@@ -106,7 +125,8 @@ function ProductDetail() {
 
   return (
     <div className="product-detail-page">
-      <Navbar />
+      <Navbar cartCount={cartCount} />
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       <div className="container">
         <button onClick={() => navigate(-1)} className="back-button">
           ← Nazad
@@ -154,7 +174,12 @@ function ProductDetail() {
           </div>
 
           <div className="product-detail-info">
-            <h1 className="product-detail-name">{product.name}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+              <h1 className="product-detail-name">{product.name}</h1>
+              {isNewProduct(product) && (
+                <span className="product-detail-badge">Novo</span>
+              )}
+            </div>
             
             {product.description && (
               <div className="product-detail-description">
@@ -184,6 +209,46 @@ function ProductDetail() {
           </div>
         </div>
       </div>
+
+      <footer className="footer">
+        <div className="container">
+          <div className="footer-content">
+            <div className="footer-section">
+              <h3>Vitas Pro</h3>
+              <p>Premium kozmetika za modernu ženu</p>
+            </div>
+            <div className="footer-section">
+              <h4>Brzi linkovi</h4>
+              <ul>
+                <li>
+                  <a href="/">Početna</a>
+                </li>
+                <li>
+                  <a href="/#products">Proizvodi</a>
+                </li>
+                <li>
+                  <a href="/#about">O nama</a>
+                </li>
+                <li>
+                  <a href="/partnership">Partnerstvo</a>
+                </li>
+                <li>
+                  <a href="/admin">Admin</a>
+                </li>
+              </ul>
+            </div>
+            <div className="footer-section">
+              <h4>Kontakt</h4>
+              <p>Email: vitascosmetics@gmail.com</p>
+              <p>Phone Serbia: +381 63 755-42-88</p>
+              <p>Phone Montenegro: +382 68 904 560</p>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <p>&copy; 2026 Vitas Pro. Sva prava zadržana.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

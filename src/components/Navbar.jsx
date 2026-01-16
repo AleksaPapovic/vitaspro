@@ -328,7 +328,7 @@ function Navbar({ cartCount = 0 }) {
                 >
                   Crna Gora
                 </a>
-                <a
+                {/* <a
                   href="/admin"
                   className="admin-link"
                   onClick={(e) => {
@@ -337,7 +337,17 @@ function Navbar({ cartCount = 0 }) {
                   }}
                 >
                   Admin
-                </a>
+                </a> */}
+                {/* <a
+                  href="/adminnew"
+                  className="admin-link"
+                  onClick={(e) => {
+                    handleNavClick(e, "/adminnew");
+                    setShowMobileMenu(false);
+                  }}
+                >
+                  Admin New
+                </a> */}
                 <a
                   href={isHomePage ? "#about" : "/#about"}
                   onClick={(e) => {
@@ -348,12 +358,21 @@ function Navbar({ cartCount = 0 }) {
                   O nama
                 </a>
               </div>
-              {isHomePage && (
+              <a
+                href="/cart"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/cart");
+                  setShowMobileMenu(false);
+                }}
+                className="cart-icon-link"
+                title="Korpa"
+              >
                 <div className="cart-icon">
                   <span className="cart-count">{cartCount}</span>
                   🛒
                 </div>
-              )}
+              </a>
             </div>
             {showMobileMenu && (
               <div

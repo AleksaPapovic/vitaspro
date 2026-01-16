@@ -1,6 +1,5 @@
 .product-detail-page {
   min-height: 100vh;
-  padding: 2rem 0;
   background: #ffffff;
 }
 
@@ -117,6 +116,17 @@
   color: #333;
   margin: 0;
   line-height: 1.2;
+}
+
+.product-detail-badge {
+  background: linear-gradient(135deg, #d4af37 0%, #c9a961 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
 }
 
 .product-detail-description {
@@ -337,4 +347,64 @@
   .price-value {
     font-size: 2rem;
   }
+}
+
+/* Footer */
+.footer {
+  background: black;
+  color: white;
+  padding: 3rem 0 1rem;
+  margin-top: 4rem;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #d4af37 0%, #c9a961 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.footer-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.footer-section p {
+  color: #ccc;
+  line-height: 1.8;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-section ul li a {
+  color: #ccc;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-section ul li a:hover {
+  color: #d4af37;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid #444;
+  color: #999;
 }
